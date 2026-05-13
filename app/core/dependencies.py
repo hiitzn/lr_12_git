@@ -44,3 +44,13 @@ def admin_required(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
     return current_user
+
+def waiter_required(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role not in ["waiter", "admin"]:
+        raise HTTPException(status_code=403, detail="Only waiters and admins allowed")
+    return current_user
+
+def cook_required(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role not in ["cook", "admin"]:
+        raise HTTPException(status_code=403, detail="Only cooks and admins allowed")
+    return current_user

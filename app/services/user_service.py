@@ -8,7 +8,7 @@ from app.repositories.user_repository import UserRepository
 
 logger = logging.getLogger(__name__)
 
-VALID_ROLES = {"user", "admin"}
+VALID_ROLES = {"waiter", "cook", "admin"}
 
 
 class UserService:

@@ -40,10 +40,14 @@
 <body>
     {% if current_user %}
     <nav>
+        {% if current_user.role in ['waiter', 'admin'] %}
         <a href="/pages/menu">Меню</a>
         <a href="/pages/tables">Столы</a>
         <a href="/pages/orders">Заказы</a>
+        {% endif %}
+        {% if current_user.role in ['cook', 'admin'] %}
         <a href="/pages/kitchen">Кухня</a>
+        {% endif %}
         {% if current_user.role == 'admin' %}
         <a href="/pages/analytics">Аналитика</a>
         <a href="/pages/admin">Админ-панель</a>

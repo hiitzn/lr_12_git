@@ -12,8 +12,9 @@
         <td>
             <form method="post" action="/pages/admin/users/{{ user.id }}/role">
                 <select name="role">
-                    <option value="user" {% if user.role == 'user' %}selected{% endif %}>user</option>
-                    <option value="admin" {% if user.role =='admin' %}selected{% endif %}>admin</option>
+                    <option value="waiter" {% if user.role =='waiter' %}selected{% endif %}>Официант</option>
+                    <option value="cook" {% if user.role =='cook' %}selected{% endif %}>Повар</option>
+                    <option value="admin" {% if user.role =='admin' %}selected{% endif %}>Админ</option>
                 </select>
                 <button type="submit">Изменить</button>
             </form>

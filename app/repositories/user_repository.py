@@ -18,8 +18,8 @@ class UserRepository:
         return db.query(User).all()
 
     @staticmethod
-    def create(db: Session, username: str, hashed_password: str) -> User:
-        user = User(username=username, password=hashed_password)
+    def create(db: Session, username: str, hashed_password: str, role: str = "waiter") -> User:
+        user = User(username=username, password=hashed_password, role=role)
         db.add(user)
         db.commit()
         db.refresh(user)

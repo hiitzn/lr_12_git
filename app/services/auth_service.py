@@ -15,8 +15,9 @@ class AuthService:
     def register(db: Session, username: str, password: str):
         if UserRepository.get_by_username(db, username):
             raise HTTPException(status_code=400, detail="Username already taken")
-        user = UserRepository.create(db, username, hash_password(password))
-        logger.info("New user registered: %s", username)
+        # При регистрации создаём пользователя с ролью "waiter" (официант)
+        user = UserRepository.create(db, username, hash_password(password), role="waiter")
+        logger.info("New user registered: %s (role: waiter)", username)
         return user
 
     @staticmethod

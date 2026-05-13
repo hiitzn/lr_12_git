@@ -17,8 +17,8 @@ VALID_STATUSES = {"new", "cooking", "ready", "paid"}
 class OrderService:
 
     @staticmethod
-    def create(db: Session, user_id: int, table_id: int, items: list[OrderItemCreate]) -> Order:
-        order = Order(user_id=user_id, table_id=table_id, status="new")
+    def create(db: Session, user_id: int, table_id: int, items: list[OrderItemCreate], notes: str | None = None) -> Order:
+        order = Order(user_id=user_id, table_id=table_id, status="new", notes=notes)
         db.add(order)
         db.flush()
 

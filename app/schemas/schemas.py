@@ -74,6 +74,7 @@ class OrderItemCreate(BaseModel):
 class OrderCreate(BaseModel):
     table_id: int
     items: List[OrderItemCreate]
+    notes: str | None = None   # добавить
 
 
 class OrderResponse(BaseModel):
@@ -82,7 +83,7 @@ class OrderResponse(BaseModel):
     table_id: int
     status: str
     total_amount: float
-
+    notes: str | None = None   # добавить
     model_config = {"from_attributes": True}
 
 
