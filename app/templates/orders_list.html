@@ -1,0 +1,21 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>Заказы</h2>
+<a href="/pages/orders/create"><button>Новый заказ</button></a>
+{% if orders %}
+<table border="1">
+    <tr><th>ID</th><th>Стол</th><th>Статус</th><th>Сумма</th><th>Действия</th></tr>
+    {% for order in orders %}
+    <tr>
+        <td>{{ order.id }}</td>
+        <td>{{ order.table_id }}</td>
+        <td>{{ order.status }}</td>
+        <td>{{ order.total_amount }}</td>
+        <td><a href="/pages/orders/status/{{ order.id }}">Изменить статус</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>Заказов пока нет.</p>
+{% endif %}
+{% endblock %}

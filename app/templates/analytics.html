@@ -1,0 +1,46 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Analytics</h2>
+
+<div class="analytics-block">
+
+    <h3>Revenue today</h3>
+    <p>{{ revenue }}</p>
+
+</div>
+
+<div class="analytics-block">
+
+    <h3>Orders by status</h3>
+
+    {% for stat in status_stats %}
+    <div>
+        {{ stat[0] }} : {{ stat[1] }}
+    </div>
+    {% endfor %}
+
+</div>
+
+<div class="analytics-block">
+
+    <h3>Top dishes</h3>
+
+    {% for dish in top_dishes %}
+    <div>
+        {{ dish[0] }} : {{ dish[1] }}
+    </div>
+    {% endfor %}
+
+</div>
+
+<div class="analytics-block">
+
+    <h3>Table load</h3>
+
+    <p>{{ table_load }}</p>
+
+</div>
+
+{% endblock %}

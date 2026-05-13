@@ -1,0 +1,13 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>Изменить статус заказа #{{ order.id }}</h2>
+<form method="post">
+    <select name="status">
+        <option value="new" {% if order.status == 'new' %}selected{% endif %}>Новый</option>
+        <option value="cooking" {% if order.status == 'cooking' %}selected{% endif %}>Готовится</option>
+        <option value="ready" {% if order.status == 'ready' %}selected{% endif %}>Готов</option>
+        <option value="paid" {% if order.status == 'paid' %}selected{% endif %}>Оплачен</option>
+    </select>
+    <button type="submit">Сохранить</button>
+</form>
+{% endblock %}

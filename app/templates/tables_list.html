@@ -1,0 +1,27 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>Столы</h2>
+{% if current_user.role == 'admin' %}
+<a href="/pages/tables/create"><button>Добавить стол</button></a>
+{% endif %}
+<table border="1">
+    <tr><th>Номер</th><th>Мест</th><th>Занят?</th><th>Действия</th></tr>
+    {% for table in tables %}
+    <tr>
+        <td>{{ table.number }}</td>
+        <td>{{ table.seats }}</td>
+        <td>{{ 'Да' if table.occupied else 'Нет' }}</td>
+        <td>
+            {% if not table.occupied %}
+            <a href="/pages/tables/occupy/{{ table.id }}">Занять</a>
+            {% else %}
+            <a href="/pages/tables/free/{{ table.id }}">Освободить</a>
+            {% endif %}
+            {% if current_user.role == 'admin' %}
+            <a href="/pages/tables/delete/{{ table.id }}">Удалить</a>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

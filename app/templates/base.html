@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Management</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .toast-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ef4444;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+        }
+
+            .toast-message.success {
+                background: #10b981;
+            }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% if current_user %}
+    <nav>
+        <a href="/pages/menu">Меню</a>
+        <a href="/pages/tables">Столы</a>
+        <a href="/pages/orders">Заказы</a>
+        <a href="/pages/kitchen">Кухня</a>
+        {% if current_user.role == 'admin' %}
+        <a href="/pages/analytics">Аналитика</a>
+        <a href="/pages/admin">Админ-панель</a>
+        {% endif %}
+        <a href="/pages/logout">Выход ({{ current_user.username }})</a>
+    </nav>
+    <hr>
+    {% endif %}
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        function showMessage(message, type = 'error') {
+            const div = document.createElement('div');
+            div.className = `toast-message ${type}`;
+            div.innerText = message;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 4000);
+        }
+
+        {% if error %}
+        showMessage("{{ error }}", "error");
+        {% endif %}
+        {% if success %}
+        showMessage("{{ success }}", "success");
+        {% endif %}
+    </script>
+</body>
+</html>

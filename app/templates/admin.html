@@ -1,0 +1,24 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>Админ-панель</h2>
+<h3>Пользователи</h3>
+<table border="1">
+    <tr><th>ID</th><th>Username</th><th>Роль</th><th>Действие</th></tr>
+    {% for user in users %}
+    <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.role }}</td>
+        <td>
+            <form method="post" action="/pages/admin/users/{{ user.id }}/role">
+                <select name="role">
+                    <option value="user" {% if user.role == 'user' %}selected{% endif %}>user</option>
+                    <option value="admin" {% if user.role =='admin' %}selected{% endif %}>admin</option>
+                </select>
+                <button type="submit">Изменить</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

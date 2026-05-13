@@ -1,0 +1,36 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<h2>Кухня</h2>
+{% if orders %}
+<div style="display: flex; flex-wrap: wrap; gap: 20px;">
+    {% for order in orders %}
+    <div class="kitchen-card" style="border:1px solid #ccc; padding:16px; border-radius:16px; width:300px;">
+        <h3>Заказ #{{ order.id }}</h3>
+        <p>Стол: {{ order.table_id }}</p>
+        <p>
+            Статус:
+            {% if order.status == 'new' %}🆕 Новый
+            {% elif order.status == 'cooking' %}🍳 Готовится
+            {% elif order.status == 'ready' %}✅ Готов
+            {% else %}💳 Оплачен
+            {% endif %}
+        </p>
+        <form method="post" action="/pages/kitchen/{{ order.id }}/status">
+            {% if order.status == 'new' %}
+            <button type="submit" name="status" value="cooking">Начать готовить</button>
+            {% elif order.status == 'cooking' %}
+            <button type="submit" name="status" value="ready">Готово</button>
+            {% elif order.status == 'ready' %}
+            <button type="submit" name="status" value="paid" disabled style="background:gray;">Оплачен (не кухня)</button>
+            {% else %}
+            <span>Заказ завершён</span>
+            {% endif %}
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p>Нет активных заказов для кухни.</p>
+{% endif %}
+{% endblock %}

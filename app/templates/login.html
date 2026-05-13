@@ -1,0 +1,22 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Вход</h2>
+
+<form method="post">
+    <input type="text"
+           name="username"
+           placeholder="Имя пользователя"
+           required>
+
+    <input type="password"
+           name="password"
+           placeholder="Пароль"
+           required>
+
+    <button type="submit">Войти</button>
+    <a href="/pages/" class="btn" style="background: #6c757d; text-decoration: none;">Назад</a>
+</form>
+
+{% endblock %}

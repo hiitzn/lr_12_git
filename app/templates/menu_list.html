@@ -1,0 +1,23 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>Меню</h2>
+{% if current_user.role == 'admin' %}
+<a href="/pages/menu/create"><button>Добавить блюдо</button></a>
+{% endif %}
+<table border="1">
+    <tr><th>Название</th><th>Цена</th><th>Категория</th><th>Действия</th></tr>
+    {% for item in items %}
+    <tr>
+        <td>{{ item.name }}</td>
+        <td>{{ item.price }}</td>
+        <td>{{ item.category }}</td>
+        <td>
+            {% if current_user.role == 'admin' %}
+            <a href="/pages/menu/edit/{{ item.id }}">Редактировать</a>
+            <a href="/pages/menu/delete/{{ item.id }}">Удалить</a>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

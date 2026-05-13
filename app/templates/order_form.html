@@ -1,0 +1,165 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>Создать заказ</h2>
+
+<form method="post" id="orderForm">
+
+    <label>Стол:</label>
+    <select name="table_id" required>
+        {% for table in tables %}
+        <option value="{{ table.id }}">Стол {{ table.number }} ({{ table.seats }} мест)</option>
+        {% endfor %}
+    </select>
+    <br><br>
+
+    <div style="background: #f8fafc; padding: 16px; border-radius: 16px; margin-bottom: 20px;">
+        <h3>Добавить блюдо</h3>
+        <select id="menuItemSelect" style="width: 60%; padding: 8px;">
+            {% for item in menu_items %}
+            <option value="{{ item.id }}" data-price="{{ item.price }}" data-name="{{ item.name }}">
+                {{ item.name }} ({{ item.price }} руб.)
+            </option>
+            {% endfor %}
+        </select>
+        <button type="button" id="addItemBtn" style="padding: 8px 16px;">➕ Добавить</button>
+    </div>
+
+    <h3>Выбранные блюда</h3>
+    <table id="selectedItemsTable" style="width: 100%; margin-bottom: 20px;">
+        <thead>
+            <tr><th>Блюдо</th><th>Цена за шт.</th><th>Количество</th><th>Сумма</th><th></th></tr>
+        </thead>
+        <tbody id="selectedItemsBody">
+
+        </tbody>
+    </table>
+
+
+    <label>Заметки к заказу:</label><br>
+    <textarea name="notes" rows="3" style="width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #ccc;"></textarea>
+    <br><br>
+
+    <button type="submit">Оформить заказ</button>
+</form>
+
+<script>
+    let selectedItems = [];
+
+    const menuSelect = document.getElementById('menuItemSelect');
+    const addBtn = document.getElementById('addItemBtn');
+    const tbody = document.getElementById('selectedItemsBody');
+
+    function renderTable() {
+        tbody.innerHTML = '';
+
+        document.querySelectorAll('.dynamic-order-field').forEach(el => el.remove());
+
+        selectedItems.forEach((item, idx) => {
+            const row = tbody.insertRow();
+
+            const cellName = row.insertCell(0);
+            cellName.textContent = item.name;
+
+            const cellPrice = row.insertCell(1);
+            cellPrice.textContent = item.price + ' руб.';
+            const cellQty = row.insertCell(2);
+            const qtyInput = document.createElement('input');
+            qtyInput.type = 'number';
+            qtyInput.value = item.quantity;
+            qtyInput.min = 1;
+            qtyInput.style.width = '70px';
+            qtyInput.addEventListener('change', (e) => {
+                const newQty = parseInt(e.target.value, 10);
+                if (newQty > 0) {
+                    item.quantity = newQty;
+                    renderTable(); 
+                } else {
+                    e.target.value = 1;
+                    item.quantity = 1;
+                    renderTable();
+                }
+            });
+            cellQty.appendChild(qtyInput);
+
+            const cellSum = row.insertCell(3);
+            const sum = item.price * item.quantity;
+            cellSum.textContent = sum + ' руб.';
+
+            const cellDel = row.insertCell(4);
+            const delBtn = document.createElement('button');
+            delBtn.textContent = '✖';
+            delBtn.style.background = '#ef4444';
+            delBtn.style.padding = '4px 8px';
+            delBtn.addEventListener('click', () => {
+                selectedItems.splice(idx, 1);
+                renderTable();
+            });
+            cellDel.appendChild(delBtn);
+
+            const hiddenItem = document.createElement('input');
+            hiddenItem.type = 'hidden';
+            hiddenItem.name = `item_${item.menu_item_id}`;
+            hiddenItem.value = '1';
+            hiddenItem.classList.add('dynamic-order-field');
+
+            const hiddenQty = document.createElement('input');
+            hiddenQty.type = 'hidden';
+            hiddenQty.name = `quantity_${item.menu_item_id}`;
+            hiddenQty.value = item.quantity;
+            hiddenQty.classList.add('dynamic-order-field');
+
+            document.getElementById('orderForm').appendChild(hiddenItem);
+            document.getElementById('orderForm').appendChild(hiddenQty);
+        });
+    }
+
+    addBtn.addEventListener('click', () => {
+        const selectedOption = menuSelect.options[menuSelect.selectedIndex];
+        const id = parseInt(selectedOption.value);
+        const name = selectedOption.getAttribute('data-name');
+        const price = parseFloat(selectedOption.getAttribute('data-price'));
+
+        const exists = selectedItems.some(item => item.menu_item_id === id);
+        if (exists) {
+            alert('Это блюдо уже добавлено. Измените количество в таблице.');
+            return;
+        }
+
+        selectedItems.push({
+            menu_item_id: id,
+            name: name,
+            price: price,
+            quantity: 1
+        });
+        renderTable();
+    });
+
+    renderTable();
+</script>
+
+<style>
+    #selectedItemsTable {
+        border-collapse: collapse;
+    }
+
+        #selectedItemsTable th, #selectedItemsTable td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #selectedItemsTable th {
+            background-color: #1e2a3a;
+            color: white;
+        }
+
+    button {
+        cursor: pointer;
+    }
+
+    textarea {
+        font-family: inherit;
+    }
+</style>
+
+{% endblock %}
