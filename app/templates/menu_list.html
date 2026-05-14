@@ -4,22 +4,48 @@
 {% if current_user.role == 'admin' %}
 <a href="/pages/menu/create"><button>Добавить блюдо</button></a>
 {% endif %}
-<table border="1">
+<table border="1" style="width:100%; border-collapse: collapse;">
     <thead>
-        <tr><th>Название</th><th>Цена</th><th>Категория</th><th>Действия</th></tr>
+        <tr>
+            <th>Название</th>
+            <th>Цена</th>
+            <th>Категория</th>
+            <th>Рецепт</th>
+            {% if current_user.role == 'admin' %}
+            <th>Действия</th>
+            {% endif %}
+        </tr>
     </thead>
     <tbody>
         {% for item in items %}
         <tr>
-            <td>{{ item.name }}</td>
-            <td>{{ item.price }}</td>
-            <td>{{ item.category }}</td>
+            <td>{{ item.name }}</a></td>
+            <td>{{ item.price }} руб.</a></td>
+            <td>{{ item.category }}</a></td>
             <td>
-                {% if current_user.role == 'admin' %}
-                <a href="/pages/menu/edit/{{ item.id }}">Редактировать</a>
-                <a href="/pages/menu/delete/{{ item.id }}" class="confirm-link" data-confirm-message="Удалить блюдо '{{ item.name }}'?">Удалить</a>
+                {% if current_user.role in ['cook', 'admin'] %}
+                {% if item.ingredients or item.instructions %}
+                <details>
+                    <summary style="cursor:pointer; font-weight:bold;">📖 Показать рецепт</summary>
+                    <div style="margin-top:8px;">
+                        <p><strong>Ингредиенты:</strong><br>{{ item.ingredients|replace('\n', '<br>')|safe if item.ingredients else '—' }}</p>
+                        <p><strong>Приготовление:</strong><br>{{ item.instructions|replace('\n', '<br>')|safe if item.instructions else '—' }}</p>
+                        <p><strong>Время:</strong> {{ item.cooking_time }} мин</p>
+                    </div>
+                </details>
+                {% else %}
+                <span style="color:gray;">Рецепт не добавлен</span>
+                {% endif %}
+                {% else %}
+                —
                 {% endif %}
             </td>
+            {% if current_user.role == 'admin' %}
+            <td>
+                <a href="/pages/menu/edit/{{ item.id }}">Редактировать</a>
+                <a href="/pages/menu/delete/{{ item.id }}" class="confirm-link" data-confirm-message="Удалить блюдо '{{ item.name }}'?">Удалить</a>
+            </td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>

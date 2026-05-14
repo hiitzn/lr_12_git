@@ -1,0 +1,14 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>Добавить отработанные часы</h2>
+<form method="post">
+    <label>Количество часов:</label>
+    <input type="number" step="0.5" name="hours" required>
+    <br><br>
+    <label>Дата (необязательно):</label>
+    <input type="date" name="date_str">
+    <br><br>
+    <button type="submit">Сохранить</button>
+    <a href="/pages/my_salary" class="btn" style="background: #6c757d; text-decoration: none;">Назад</a>
+</form>
+{% endblock %}

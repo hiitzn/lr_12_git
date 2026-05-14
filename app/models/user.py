@@ -6,10 +6,10 @@ from app.core.database import Base
 
 class User(Base):
     __tablename__ = "users"
-
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
-    role = Column(String, default="waiter")  
+    role = Column(String, default="waiter")
+    hourly_rate = Column(Integer, default=200)
 
     orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")

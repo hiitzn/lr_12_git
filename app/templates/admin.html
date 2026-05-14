@@ -4,14 +4,21 @@
 <h3>Пользователи</h3>
 <table border="1">
     <thead>
-        <tr><th>ID</th><th>Username</th><th>Роль</th><th>Изменить роль</th><th>Удалить</th></tr>
+        <tr><th>ID</th><th>Username</th><th>Роль</th><th>Ставка (руб/час)</th><th>Изменить роль</th><th>Удалить</th></tr>
     </thead>
     <tbody>
         {% for user in users %}
         <tr>
-            <td>{{ user.id }}</td>
-            <td>{{ user.username }}</td>
-            <td>{{ user.role }}</td>
+            <td>{{ user.id }}</a></td>
+            <td>{{ user.username }}</a></td>
+            <td>{{ user.role }}</a></td>
+            <td>
+                <form method="post" action="/pages/admin/users/{{ user.id }}/hourly_rate" class="confirm-form" data-confirm-message="Изменить часовую ставку пользователя '{{ user.username }}' на {{ user.hourly_rate }} руб.?">
+                    <input type="number" name="hourly_rate" value="{{ user.hourly_rate }}" step="10" style="width:80px;">
+                    <button type="submit">Изменить</button>
+                </form>
+                </a>
+            </td>
             <td>
                 <form method="post" action="/pages/admin/users/{{ user.id }}/role" class="confirm-form" data-confirm-message="Изменить роль пользователя '{{ user.username }}'?">
                     <select name="role">
@@ -21,15 +28,17 @@
                     </select>
                     <button type="submit">Изменить</button>
                 </form>
+                </a>
             </td>
             <td>
                 {% if user.id != current_user.id %}
-                <form method="post" action="/pages/admin/users/{{ user.id }}/delete" class="confirm-form" data-confirm-message="Удалить пользователя '{{ user.username }}'? Все его заказы также будут удалены.">
+                <form method="post" action="/pages/admin/users/{{ user.id }}/delete" class="confirm-form" data-confirm-message="Удалить пользователя '{{ user.username }}'? Все его заказы и брони также будут удалены.">
                     <button type="submit" style="background:#dc2626;">Удалить</button>
                 </form>
                 {% else %}
                 —
                 {% endif %}
+                </a>
             </td>
         </tr>
         {% endfor %}

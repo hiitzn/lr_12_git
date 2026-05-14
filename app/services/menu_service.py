@@ -1,5 +1,4 @@
 ﻿import logging
-
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -16,8 +15,9 @@ class MenuService:
         return MenuRepository.get_all(db)
 
     @staticmethod
-    def create(db: Session, name: str, price: float, category: str) -> MenuItem:
-        return MenuRepository.create(db, name, price, category)
+    def create(db: Session, name: str, price: float, category: str,
+               ingredients: str = "", instructions: str = "", cooking_time: int = 30) -> MenuItem:
+        return MenuRepository.create(db, name, price, category, ingredients, instructions, cooking_time)
 
     @staticmethod
     def _get_or_404(db: Session, item_id: int) -> MenuItem:
@@ -27,9 +27,18 @@ class MenuService:
         return item
 
     @staticmethod
-    def update(db: Session, item_id: int, name: str, price: float, category: str) -> MenuItem:
+    def update(db: Session, item_id: int, name: str, price: float, category: str,
+               ingredients: str = "", instructions: str = "", cooking_time: int = 30) -> MenuItem:
         item = MenuService._get_or_404(db, item_id)
-        return MenuRepository.update(db, item, name, price, category)
+        item.name = name
+        item.price = price
+        item.category = category
+        item.ingredients = ingredients
+        item.instructions = instructions
+        item.cooking_time = cooking_time
+        db.commit()
+        db.refresh(item)
+        return item
 
     @staticmethod
     def delete(db: Session, item_id: int) -> dict:

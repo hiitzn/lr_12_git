@@ -1,13 +1,13 @@
 ﻿{% extends "base.html" %}
 {% block content %}
-<h2>Кухня</h2>
+<h2>Активные заказы (кухня)</h2>
 {% if orders %}
 <div style="display: flex; flex-wrap: wrap; gap: 20px;">
     {% for order in orders %}
-    <div class="kitchen-card" style="border:1px solid #ccc; padding:16px; border-radius:16px; width:350px;">
+    <div class="kitchen-card" style="border:1px solid #ccc; padding:16px; border-radius:16px; width:400px;">
         <h3>Заказ #{{ order.id }}</h3>
         <p><strong>Стол:</strong> {{ order.table_id }}</p>
-        <p><strong>Официант:</strong> {{ order.user.username }}</p>
+        <p><strong>Официант:</strong> {{ order.user.username if order.user else '—' }}</p>
         <p>
             <strong>Статус:</strong>
             {% if order.status == 'new' %}🆕 Новый
@@ -16,12 +16,30 @@
             {% endif %}
         </p>
         <p><strong>Комментарий:</strong> {{ order.notes or '—' }}</p>
+
         <p><strong>Блюда:</strong></p>
-        <ul>
+        <ul style="list-style-type: none; padding-left: 0;">
             {% for item in order.items %}
-            <li>{{ item.menu_item.name }} – {{ item.quantity }} шт.</li>
+            <li style="margin-bottom: 16px; border-bottom: 1px solid #eee; padding-bottom: 8px;">
+                <strong>{{ item.menu_item.name }} – {{ item.quantity }} шт.</strong>
+                {% if item.menu_item.ingredients %}
+                <details style="margin-top: 6px; margin-left: 12px;">
+                    <summary style="cursor: pointer; font-weight: bold;">📖 Показать рецепт</summary>
+                    <div style="margin-top: 6px;">
+                        <p><strong>Ингредиенты:</strong><br>{{ item.menu_item.ingredients | replace('\n', '<br>') | safe }}</p>
+                        <p><strong>Приготовление:</strong><br>{{ item.menu_item.instructions | replace('\n', '<br>') | safe }}</p>
+                        <p><strong>Время:</strong> {{ item.menu_item.cooking_time }} мин</p>
+                    </div>
+                </details>
+                {% else %}
+                <div style="margin-top: 4px; margin-left: 12px; font-size: 0.85em; color: gray;">
+                    (рецепт не добавлен)
+                </div>
+                {% endif %}
+            </li>
             {% endfor %}
         </ul>
+
         <form method="post" action="/pages/kitchen/{{ order.id }}/status">
             {% if order.status == 'new' %}
             <button type="submit" name="status" value="cooking">Начать готовить</button>

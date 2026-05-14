@@ -25,7 +25,6 @@
             border-radius: 12px;
             width: 300px;
             text-align: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
 
         .modal-buttons {
@@ -64,6 +63,45 @@
                 opacity: 1;
             }
         }
+        /* Выпадающее меню */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 180px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+            .dropdown-content a {
+                color: #1e2a3a;
+                padding: 12px 16px;
+                text-decoration: none;
+                display: block;
+                text-align: left;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+                .dropdown-content a:hover {
+                    background-color: #0070f3;
+                    color: white;
+                }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropbtn::after {
+            content: " ▼";
+            font-size: 10px;
+        }
     </style>
 </head>
 <body>
@@ -72,17 +110,31 @@
         {% if current_user.role in ['waiter', 'admin'] %}
         <a href="/pages/menu">Меню</a>
         <a href="/pages/tables">Столы</a>
-        <a href="/pages/orders">Заказы</a>
         {% endif %}
-        {% if current_user.role in ['cook', 'admin'] %}
-        <a href="/pages/kitchen">Кухня</a>
+
+        {% if current_user.role == 'waiter' %}
+        <div class="dropdown">
+            <a href="#" class="dropbtn">Заказы</a>
+            <div class="dropdown-content">
+                <a href="/pages/orders">Мои заказы</a>
+                <a href="/pages/orders/history">История заказов</a>
+            </div>
+        </div>
+        <a href="/pages/my_salary">Моя зарплата</a>
         {% endif %}
+
+        {% if current_user.role in ['cook'] %}
+        <a href="/pages/kitchen">Активные заказы</a>
+        {% endif %}
+
         {% if current_user.role == 'admin' %}
+        <a href="/pages/salary_stats">Зарплаты</a>
+        <a href="/pages/orders/history">История заказов</a>
         <a href="/pages/analytics">Аналитика</a>
         <a href="/pages/admin">Админ-панель</a>
         {% endif %}
-        <!-- Ссылка выхода с классом confirm-link и сообщением -->
-        <a href="/pages/logout" class="confirm-link" data-confirm-message="Вы уверены, что хотите выйти из профиля?">Выход ({{ current_user.username }})</a>
+
+        <a href="/pages/logout" class="confirm-link" data-confirm-message="Вы уверены?">Выход ({{ current_user.username }})</a>
     </nav>
     <hr>
     {% endif %}
@@ -90,7 +142,6 @@
         {% block content %}{% endblock %}
     </div>
 
-    <!-- Модальное окно -->
     <div id="confirmModal" class="modal">
         <div class="modal-content">
             <p id="modalMessage">Вы уверены?</p>
@@ -162,12 +213,8 @@
             }
         });
 
-        {% if error %}
-        showMessage("{{ error }}", "error");
-        {% endif %}
-        {% if success %}
-        showMessage("{{ success }}", "success");
-        {% endif %}
+        {% if error %} showMessage("{{ error }}", "error"); {% endif %}
+        {% if success %} showMessage("{{ success }}", "success"); {% endif %}
     </script>
 </body>
 </html>

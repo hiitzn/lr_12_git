@@ -1,7 +1,5 @@
 ﻿from sqlalchemy.orm import Session
-
 from app.models.menu import MenuItem
-
 
 class MenuRepository:
 
@@ -14,18 +12,30 @@ class MenuRepository:
         return db.query(MenuItem).filter(MenuItem.id == item_id).first()
 
     @staticmethod
-    def create(db: Session, name: str, price: float, category: str) -> MenuItem:
-        item = MenuItem(name=name, price=price, category=category)
+    def create(db: Session, name: str, price: float, category: str, 
+               ingredients: str = '', instructions: str = '', cooking_time: int = 30) -> MenuItem:
+        item = MenuItem(
+            name=name, 
+            price=price, 
+            category=category,
+            ingredients=ingredients,
+            instructions=instructions,
+            cooking_time=cooking_time
+        )
         db.add(item)
         db.commit()
         db.refresh(item)
         return item
 
     @staticmethod
-    def update(db: Session, item: MenuItem, name: str, price: float, category: str) -> MenuItem:
+    def update(db: Session, item: MenuItem, name: str, price: float, category: str,
+               ingredients: str = '', instructions: str = '', cooking_time: int = 30) -> MenuItem:
         item.name = name
         item.price = price
         item.category = category
+        item.ingredients = ingredients     
+        item.instructions = instructions    
+        item.cooking_time = cooking_time  
         db.commit()
         db.refresh(item)
         return item

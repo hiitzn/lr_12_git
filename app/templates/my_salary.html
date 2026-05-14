@@ -1,0 +1,8 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>Отработано часов</h2>
+<p><strong>Отработано часов:</strong> {{ total_hours }}</p>
+<p><strong>Ставка в час:</strong> {{ hourly_rate }} руб.</p>
+<p><strong>Итого зарплата:</strong> {{ salary }} руб.</p>
+<a href="/pages/add_hours" class="btn">Добавить часы</a>
+{% endblock %}

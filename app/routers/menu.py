@@ -17,12 +17,29 @@ def get_menu(db: Session = Depends(get_db), _: User = Depends(get_current_user))
 
 @router.post("/", response_model=MenuItemResponse)
 def create_item(data: MenuItemCreate, db: Session = Depends(get_db), _: User = Depends(admin_required)):
-    return MenuService.create(db, data.name, data.price, data.category)
+    return MenuService.create(
+        db, 
+        data.name, 
+        data.price, 
+        data.category,
+        getattr(data, 'ingredients', ''),
+        getattr(data, 'instructions', ''),
+        getattr(data, 'cooking_time', 30)
+    )
 
 
 @router.put("/{item_id}", response_model=MenuItemResponse)
 def update_item(item_id: int, data: MenuItemUpdate, db: Session = Depends(get_db), _: User = Depends(admin_required)):
-    return MenuService.update(db, item_id, data.name, data.price, data.category)
+    return MenuService.update(
+        db, 
+        item_id, 
+        data.name, 
+        data.price, 
+        data.category,
+        getattr(data, 'ingredients', ''),
+        getattr(data, 'instructions', ''),
+        getattr(data, 'cooking_time', 30)
+    )
 
 
 @router.delete("/{item_id}")

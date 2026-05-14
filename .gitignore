@@ -43,3 +43,12 @@ Thumbs.db
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Alembic (игнорируем версии миграций, но не саму структуру)
+alembic/versions/
+*.db
+*.sqlite
+__pycache__/
+*.pyc
+.env
+data/

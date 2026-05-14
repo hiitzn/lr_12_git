@@ -9,5 +9,12 @@
         <option value="paid" {% if order.status == 'paid' %}selected{% endif %}>Оплачен</option>
     </select>
     <button type="submit">Сохранить</button>
+    
+    <!-- Кнопка "Назад" в зависимости от того, откуда пришли -->
+    {% if from_history %}
+        <a href="/pages/orders/history" class="btn" style="background: #6c757d; text-decoration: none;">Назад к истории</a>
+    {% else %}
+        <a href="/pages/orders" class="btn" style="background: #6c757d; text-decoration: none;">Назад к моим заказам</a>
+    {% endif %}
 </form>
 {% endblock %}

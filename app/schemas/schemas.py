@@ -47,12 +47,18 @@ class MenuItemCreate(BaseModel):
     name: str
     price: float
     category: str
+    ingredients: str | None = None
+    instructions: str | None = None
+    cooking_time: int = 30
 
 
 class MenuItemUpdate(BaseModel):
     name: str
     price: float
     category: str
+    ingredients: str | None = None
+    instructions: str | None = None
+    cooking_time: int = 30
 
 
 class MenuItemResponse(BaseModel):
@@ -60,6 +66,9 @@ class MenuItemResponse(BaseModel):
     name: str
     price: float
     category: str
+    ingredients: str | None = None
+    instructions: str | None = None
+    cooking_time: int = 30
 
     model_config = {"from_attributes": True}
 
@@ -113,3 +122,36 @@ class TableBookingResponse(BaseModel):
     username: str | None = None
 
     model_config = {"from_attributes": True}
+
+class WorkLogCreate(BaseModel):
+    user_id: int
+    hours: float
+    date: datetime | None = None
+
+class WorkLogResponse(BaseModel):
+    id: int
+    user_id: int
+    hours: float
+    date: datetime
+    model_config = {"from_attributes": True}
+
+class RecipeCreate(BaseModel):
+    menu_item_id: int
+    ingredients: str
+    instructions: str
+    cooking_time: int = 30
+
+class RecipeResponse(BaseModel):
+    id: int
+    menu_item_id: int
+    ingredients: str
+    instructions: str
+    cooking_time: int
+    menu_item_name: str | None = None
+
+    model_config = {"from_attributes": True}
+
+class RecipeUpdate(BaseModel):
+    ingredients: str | None = None
+    instructions: str | None = None
+    cooking_time: int | None = None

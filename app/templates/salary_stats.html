@@ -1,0 +1,20 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>Статистика зарплат сотрудников</h2>
+<table border="1">
+    <thead>
+        <tr><th>Сотрудник</th><th>Роль</th><th>Ставка (руб/час)</th><th>Отработано часов</th><th>Зарплата</th></tr>
+    </thead>
+    <tbody>
+        {% for stat in stats %}
+        <tr>
+            <td>{{ stat.username }}</td>
+            <td>{{ stat.role }}</td>
+            <td>{{ stat.hourly_rate }}</td>
+            <td>{{ stat.total_hours }}</td>
+            <td>{{ stat.salary }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
