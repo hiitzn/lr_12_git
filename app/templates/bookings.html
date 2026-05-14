@@ -15,8 +15,8 @@
             <td>{{ booking.booking_time.strftime('%d.%m.%Y %H:%M') }}</td>
             <td>
                 {% if booking.user_id == current_user.id or current_user.role == 'admin' %}
-                <form method="post" action="/pages/bookings/{{ booking.id }}/cancel" style="display:inline;">
-                    <button type="submit" onclick="return confirm('Отменить бронь?')">Отменить</button>
+                <form method="post" action="/pages/bookings/{{ booking.id }}/cancel" class="confirm-form" data-confirm-message="Отменить бронь стола {{ booking.table_number }} на {{ booking.booking_time.strftime('%d.%m %H:%M') }}?">
+                    <button type="submit">Отменить</button>
                 </form>
                 {% endif %}
             </td>
@@ -27,5 +27,5 @@
 {% else %}
 <p>Нет активных броней на ближайшую неделю.</p>
 {% endif %}
-<a href="/pages/tables" class="btn" style="background: #6c757d;">Назад к столам</a>
+<a href="/pages/tables" class="btn" style="background:#6c757d;">Назад к столам</a>
 {% endblock %}

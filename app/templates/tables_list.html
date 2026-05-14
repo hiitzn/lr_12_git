@@ -1,7 +1,7 @@
 ﻿{% extends "base.html" %}
 {% block content %}
 <h2>Столы</h2>
-<div style="margin-bottom: 16px;">
+<div style="margin-bottom:16px;">
     <a href="/pages/bookings"><button>Посмотреть брони на неделю</button></a>
     {% if current_user.role == 'admin' %}
     <a href="/pages/tables/create"><button>Добавить стол</button></a>
@@ -19,21 +19,17 @@
             <td>{{ 'Да' if table.occupied else 'Нет' }}</td>
             <td>
                 {% set nearest = table.bookings|selectattr("status","eq","active")|sort(attribute="booking_time")|first if table.bookings else none %}
-                {% if nearest %}
-                {{ nearest.booking_time.strftime('%d.%m %H:%M') }}
-                {% else %}
-                —
-                {% endif %}
+                {% if nearest %}{{ nearest.booking_time.strftime('%d.%m %H:%M') }}{% else %}—{% endif %}
             </td>
             <td>
                 {% if not table.occupied %}
-                <a href="/pages/tables/occupy/{{ table.id }}">Занять</a>
+                <a href="/pages/tables/occupy/{{ table.id }}" class="confirm-link" data-confirm-message="Занять стол №{{ table.number }}?">Занять</a>
                 {% else %}
-                <a href="/pages/tables/free/{{ table.id }}">Освободить</a>
+                <a href="/pages/tables/free/{{ table.id }}" class="confirm-link" data-confirm-message="Освободить стол №{{ table.number }}?">Освободить</a>
                 {% endif %}
                 <a href="/pages/tables/book/{{ table.id }}">Забронировать</a>
                 {% if current_user.role == 'admin' %}
-                <a href="/pages/tables/delete/{{ table.id }}">Удалить</a>
+                <a href="/pages/tables/delete/{{ table.id }}" class="confirm-link" data-confirm-message="Удалить стол №{{ table.number }}?">Удалить</a>
                 {% endif %}
             </td>
         </tr>

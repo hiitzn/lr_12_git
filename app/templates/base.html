@@ -6,6 +6,37 @@
     <title>Restaurant Management</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
+        /* Стили для модального окна */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .modal-buttons {
+            margin-top: 20px;
+        }
+
+            .modal-buttons button {
+                margin: 0 8px;
+                padding: 8px 16px;
+            }
+
         .toast-message {
             position: fixed;
             top: 20px;
@@ -14,9 +45,7 @@
             color: white;
             padding: 12px 24px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 1000;
-            font-weight: 500;
             animation: slideIn 0.3s ease-out;
         }
 
@@ -52,12 +81,24 @@
         <a href="/pages/analytics">Аналитика</a>
         <a href="/pages/admin">Админ-панель</a>
         {% endif %}
-        <a href="/pages/logout">Выход ({{ current_user.username }})</a>
+        <!-- Ссылка выхода с классом confirm-link и сообщением -->
+        <a href="/pages/logout" class="confirm-link" data-confirm-message="Вы уверены, что хотите выйти из профиля?">Выход ({{ current_user.username }})</a>
     </nav>
     <hr>
     {% endif %}
     <div class="container">
         {% block content %}{% endblock %}
+    </div>
+
+    <!-- Модальное окно -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <p id="modalMessage">Вы уверены?</p>
+            <div class="modal-buttons">
+                <button id="modalConfirmBtn" class="btn">Да</button>
+                <button id="modalCancelBtn" class="btn" style="background:#6c757d;">Нет</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -68,6 +109,58 @@
             document.body.appendChild(div);
             setTimeout(() => div.remove(), 4000);
         }
+
+        let pendingCallback = null;
+        const modal = document.getElementById('confirmModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const confirmBtn = document.getElementById('modalConfirmBtn');
+        const cancelBtn = document.getElementById('modalCancelBtn');
+
+        function confirmAction(message, callback) {
+            modalMessage.innerText = message;
+            modal.style.display = 'block';
+            pendingCallback = callback;
+        }
+
+        confirmBtn.onclick = function() {
+            modal.style.display = 'none';
+            if (pendingCallback) pendingCallback(true);
+            pendingCallback = null;
+        };
+        cancelBtn.onclick = function() {
+            modal.style.display = 'none';
+            if (pendingCallback) pendingCallback(false);
+            pendingCallback = null;
+        };
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+                if (pendingCallback) pendingCallback(false);
+                pendingCallback = null;
+            }
+        };
+
+        document.addEventListener('submit', function(e) {
+            const form = e.target;
+            if (form.classList.contains('confirm-form')) {
+                e.preventDefault();
+                const message = form.getAttribute('data-confirm-message') || 'Вы уверены?';
+                confirmAction(message, (confirmed) => {
+                    if (confirmed) form.submit();
+                });
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('.confirm-link');
+            if (link && link.href) {
+                e.preventDefault();
+                const message = link.getAttribute('data-confirm-message') || 'Вы уверены?';
+                confirmAction(message, (confirmed) => {
+                    if (confirmed) window.location.href = link.href;
+                });
+            }
+        });
 
         {% if error %}
         showMessage("{{ error }}", "error");

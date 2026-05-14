@@ -10,6 +10,6 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
-    role = Column(String, default="user")
+    role = Column(String, default="waiter")  
 
-    orders = relationship("Order", back_populates="user")
+    orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")

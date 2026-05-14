@@ -5,19 +5,23 @@
 <a href="/pages/menu/create"><button>Добавить блюдо</button></a>
 {% endif %}
 <table border="1">
-    <tr><th>Название</th><th>Цена</th><th>Категория</th><th>Действия</th></tr>
-    {% for item in items %}
-    <tr>
-        <td>{{ item.name }}</td>
-        <td>{{ item.price }}</td>
-        <td>{{ item.category }}</td>
-        <td>
-            {% if current_user.role == 'admin' %}
-            <a href="/pages/menu/edit/{{ item.id }}">Редактировать</a>
-            <a href="/pages/menu/delete/{{ item.id }}">Удалить</a>
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
+    <thead>
+        <tr><th>Название</th><th>Цена</th><th>Категория</th><th>Действия</th></tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.price }}</td>
+            <td>{{ item.category }}</td>
+            <td>
+                {% if current_user.role == 'admin' %}
+                <a href="/pages/menu/edit/{{ item.id }}">Редактировать</a>
+                <a href="/pages/menu/delete/{{ item.id }}" class="confirm-link" data-confirm-message="Удалить блюдо '{{ item.name }}'?">Удалить</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

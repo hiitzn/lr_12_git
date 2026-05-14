@@ -319,3 +319,15 @@ async def cancel_booking(
     is_admin = user.role == "admin"
     TableBookingService.cancel_booking(db, booking_id, user.id, is_admin)
     return RedirectResponse(url="/pages/bookings", status_code=302)
+
+# ------------------- УДАЛЕНИЕ ПОЛЬЗОВАТЕЛЯ (ТОЛЬКО АДМИН) -------------------
+@router.post("/admin/users/{user_id}/delete")
+async def admin_delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(admin_required)
+):
+    if user_id == current_user.id:
+        raise HTTPException(400, "Нельзя удалить самого себя")
+    UserService.delete_user(db, user_id)
+    return RedirectResponse(url="/pages/admin", status_code=302)

@@ -3,23 +3,36 @@
 <h2>Админ-панель</h2>
 <h3>Пользователи</h3>
 <table border="1">
-    <tr><th>ID</th><th>Username</th><th>Роль</th><th>Действие</th></tr>
-    {% for user in users %}
-    <tr>
-        <td>{{ user.id }}</td>
-        <td>{{ user.username }}</td>
-        <td>{{ user.role }}</td>
-        <td>
-            <form method="post" action="/pages/admin/users/{{ user.id }}/role">
-                <select name="role">
-                    <option value="waiter" {% if user.role =='waiter' %}selected{% endif %}>Официант</option>
-                    <option value="cook" {% if user.role =='cook' %}selected{% endif %}>Повар</option>
-                    <option value="admin" {% if user.role =='admin' %}selected{% endif %}>Админ</option>
-                </select>
-                <button type="submit">Изменить</button>
-            </form>
-        </td>
-    </tr>
-    {% endfor %}
+    <thead>
+        <tr><th>ID</th><th>Username</th><th>Роль</th><th>Изменить роль</th><th>Удалить</th></tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.role }}</td>
+            <td>
+                <form method="post" action="/pages/admin/users/{{ user.id }}/role" class="confirm-form" data-confirm-message="Изменить роль пользователя '{{ user.username }}'?">
+                    <select name="role">
+                        <option value="waiter" {% if user.role =='waiter' %}selected{% endif %}>Официант</option>
+                        <option value="cook" {% if user.role =='cook' %}selected{% endif %}>Повар</option>
+                        <option value="admin" {% if user.role =='admin' %}selected{% endif %}>Админ</option>
+                    </select>
+                    <button type="submit">Изменить</button>
+                </form>
+            </td>
+            <td>
+                {% if user.id != current_user.id %}
+                <form method="post" action="/pages/admin/users/{{ user.id }}/delete" class="confirm-form" data-confirm-message="Удалить пользователя '{{ user.username }}'? Все его заказы также будут удалены.">
+                    <button type="submit" style="background:#dc2626;">Удалить</button>
+                </form>
+                {% else %}
+                —
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}
