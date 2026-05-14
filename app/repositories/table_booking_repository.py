@@ -1,6 +1,7 @@
 ﻿from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.models.table_booking import TableBooking
+from app.core.config import settings
 
 class TableBookingRepository:
     @staticmethod
@@ -17,16 +18,16 @@ class TableBookingRepository:
             TableBooking.booking_time >= from_time
         ).order_by(TableBooking.booking_time).all()
 
+
     @staticmethod
     def is_table_booked(db: Session, table_id: int, check_time: datetime) -> bool:
-        """Проверяет, забронирован ли стол на указанное время (длительность 2 часа по умолчанию)"""
-        # Для простоты считаем, что бронь длится 2 часа (120 минут)
-        end_time = check_time + timedelta(minutes=120)
+        duration = settings.BOOKING_DURATION_MINUTES
+        end_time = check_time + timedelta(minutes=duration)
         overlapping = db.query(TableBooking).filter(
             TableBooking.table_id == table_id,
             TableBooking.status == "active",
             TableBooking.booking_time < end_time,
-            TableBooking.booking_time + timedelta(minutes=120) > check_time
+            TableBooking.booking_time + timedelta(minutes=duration) > check_time
         ).first()
         return overlapping is not None
 

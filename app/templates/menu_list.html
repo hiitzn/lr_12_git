@@ -28,8 +28,8 @@
                 <details>
                     <summary style="cursor:pointer; font-weight:bold;">📖 Показать рецепт</summary>
                     <div style="margin-top:8px;">
-                        <p><strong>Ингредиенты:</strong><br>{{ item.ingredients|replace('\n', '<br>')|safe if item.ingredients else '—' }}</p>
-                        <p><strong>Приготовление:</strong><br>{{ item.instructions|replace('\n', '<br>')|safe if item.instructions else '—' }}</p>
+                        <p><strong>Ингредиенты:</strong><br>{{ item.ingredients|nl2br if item.ingredients else '—' }}</p>
+                        <p><strong>Приготовление:</strong><br>{{ item.instructions|nl2br if item.instructions else '—' }}</p>
                         <p><strong>Время:</strong> {{ item.cooking_time }} мин</p>
                     </div>
                 </details>
@@ -43,7 +43,10 @@
             {% if current_user.role == 'admin' %}
             <td>
                 <a href="/pages/menu/edit/{{ item.id }}">Редактировать</a>
-                <a href="/pages/menu/delete/{{ item.id }}" class="confirm-link" data-confirm-message="Удалить блюдо '{{ item.name }}'?">Удалить</a>
+                <!-- ИЗМЕНЕНО: ссылка удаления заменена на POST-форму -->
+                <form method="post" action="/pages/menu/delete/{{ item.id }}" class="confirm-form" data-confirm-message="Удалить блюдо '{{ item.name }}'?">
+                    <button type="submit" class="link-button">Удалить</button>
+                </form>
             </td>
             {% endif %}
         </tr>

@@ -6,7 +6,7 @@
     {% for order in orders %}
     <div class="kitchen-card" style="border:1px solid #ccc; padding:16px; border-radius:16px; width:400px;">
         <h3>Заказ #{{ order.id }}</h3>
-        <p><strong>Стол:</strong> {{ order.table_id }}</p>
+        <p><strong>Стол:</strong> {{ order.table.number if order.table else '?' }}</p>
         <p><strong>Официант:</strong> {{ order.user.username if order.user else '—' }}</p>
         <p>
             <strong>Статус:</strong>
@@ -26,8 +26,8 @@
                 <details style="margin-top: 6px; margin-left: 12px;">
                     <summary style="cursor: pointer; font-weight: bold;">📖 Показать рецепт</summary>
                     <div style="margin-top: 6px;">
-                        <p><strong>Ингредиенты:</strong><br>{{ item.menu_item.ingredients | replace('\n', '<br>') | safe }}</p>
-                        <p><strong>Приготовление:</strong><br>{{ item.menu_item.instructions | replace('\n', '<br>') | safe }}</p>
+                        <p><strong>Ингредиенты:</strong><br>{{ item.menu_item.ingredients|nl2br }}</p>
+                        <p><strong>Приготовление:</strong><br>{{ item.menu_item.instructions|nl2br }}</p>
                         <p><strong>Время:</strong> {{ item.menu_item.cooking_time }} мин</p>
                     </div>
                 </details>

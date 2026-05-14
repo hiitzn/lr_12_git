@@ -1,18 +1,52 @@
 ﻿{% extends "base.html" %}
 {% block content %}
 <h2>Бронирование стола №{{ table.number }}</h2>
-<form method="post">
+<form method="post" id="bookingForm">
     <label>Дата брони:</label>
     <input type="date" name="booking_date" required min="{{ now_date }}" value="{{ now_date }}">
     <br><br>
     <label>Время начала:</label>
-    <input type="time" name="booking_time" required value="19:00">
+    <input type="time" name="booking_time" required value="19:00" id="booking_time">
     <br><br>
     <button type="submit">Забронировать</button>
     <a href="/pages/tables" class="btn" style="background: #6c757d;">Назад</a>
 </form>
 <script>
     const today = new Date().toISOString().split('T')[0];
-    document.querySelector('input[name="booking_date"]').min = today;
+    const dateInput = document.querySelector('input[name="booking_date"]');
+    const timeInput = document.getElementById('booking_time');
+
+    function updateMinTime() {
+        if (dateInput.value === today) {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            // Добавляем 1 час, чтобы не забронировать на уже прошедшее время
+            hours = hours + 1;
+            if (hours >= 24) {
+                hours = 23;
+                minutes = 59;
+            }
+            const minTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+            timeInput.min = minTime;
+            if (timeInput.value < minTime) {
+                timeInput.value = minTime;
+            }
+        } else {
+            timeInput.min = "00:00";
+        }
+    }
+
+    dateInput.addEventListener('change', updateMinTime);
+    updateMinTime();
+
+    // Дополнительная проверка при отправке формы
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        const bookingDateTime = new Date(dateInput.value + 'T' + timeInput.value);
+        if (bookingDateTime < new Date()) {
+            e.preventDefault();
+            showMessage("Нельзя забронировать на прошедшее время", 'error');
+        }
+    });
 </script>
 {% endblock %}

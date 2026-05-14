@@ -1,7 +1,8 @@
 ﻿import logging
+from datetime import datetime
 
 from fastapi import HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.models.table import RestaurantTable
 from app.repositories.table_repository import TableRepository
@@ -14,6 +15,18 @@ class TableService:
     @staticmethod
     def get_all(db: Session) -> list[RestaurantTable]:
         return TableRepository.get_all(db)
+
+    @staticmethod
+    def get_all_with_bookings(db: Session) -> list[RestaurantTable]:
+        from sqlalchemy.orm import joinedload
+        now = datetime.utcnow()  # naive UTC
+        tables = db.query(RestaurantTable).options(
+            joinedload(RestaurantTable.bookings)
+        ).all()
+        for table in tables:
+            if table.bookings:
+                table.bookings = [b for b in table.bookings if b.status == "active" and b.booking_time >= now]
+        return tables
 
     @staticmethod
     def create(db: Session, number: int, seats: int) -> RestaurantTable:

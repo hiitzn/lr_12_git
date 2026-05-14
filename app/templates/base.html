@@ -125,6 +125,7 @@
 
         {% if current_user.role in ['cook'] %}
         <a href="/pages/kitchen">Активные заказы</a>
+        <a href="/pages/orders/history">История заказов</a>
         {% endif %}
 
         {% if current_user.role == 'admin' %}
@@ -213,8 +214,8 @@
             }
         });
 
-        {% if error %} showMessage("{{ error }}", "error"); {% endif %}
-        {% if success %} showMessage("{{ success }}", "success"); {% endif %}
+        {% if error %} showMessage({{ error|tojson }}, "error"); {% endif %}
+        {% if success %} showMessage({{ success|tojson }}, "success"); {% endif %}
     </script>
 </body>
 </html>

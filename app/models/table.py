@@ -10,5 +10,5 @@ class RestaurantTable(Base):
     seats = Column(Integer, nullable=False)
     occupied = Column(Boolean, default=False)
 
-    # Добавить связь с бронями
     bookings = relationship("TableBooking", back_populates="table", cascade="all, delete")
+    orders = relationship("Order", back_populates="table")

@@ -134,24 +134,3 @@ class WorkLogResponse(BaseModel):
     hours: float
     date: datetime
     model_config = {"from_attributes": True}
-
-class RecipeCreate(BaseModel):
-    menu_item_id: int
-    ingredients: str
-    instructions: str
-    cooking_time: int = 30
-
-class RecipeResponse(BaseModel):
-    id: int
-    menu_item_id: int
-    ingredients: str
-    instructions: str
-    cooking_time: int
-    menu_item_name: str | None = None
-
-    model_config = {"from_attributes": True}
-
-class RecipeUpdate(BaseModel):
-    ingredients: str | None = None
-    instructions: str | None = None
-    cooking_time: int | None = None

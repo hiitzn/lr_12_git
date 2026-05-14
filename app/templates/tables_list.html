@@ -3,6 +3,7 @@
 <h2>Столы</h2>
 <div style="margin-bottom:16px;">
     <a href="/pages/bookings"><button>Посмотреть брони на неделю</button></a>
+    <a href="/pages/bookings/history"><button style="background: #6c757d;">История бронирований</button></a>
     {% if current_user.role == 'admin' %}
     <a href="/pages/tables/create"><button>Добавить стол</button></a>
     {% endif %}
@@ -23,13 +24,19 @@
             </td>
             <td>
                 {% if not table.occupied %}
-                <a href="/pages/tables/occupy/{{ table.id }}" class="confirm-link" data-confirm-message="Занять стол №{{ table.number }}?">Занять</a>
+                <form method="post" action="/pages/tables/occupy/{{ table.id }}" class="confirm-form" data-confirm-message="Занять стол №{{ table.number }}?">
+                    <button type="submit" class="link-button">Занять</button>
+                </form>
                 {% else %}
-                <a href="/pages/tables/free/{{ table.id }}" class="confirm-link" data-confirm-message="Освободить стол №{{ table.number }}?">Освободить</a>
+                <form method="post" action="/pages/tables/free/{{ table.id }}" class="confirm-form" data-confirm-message="Освободить стол №{{ table.number }}?">
+                    <button type="submit" class="link-button">Освободить</button>
+                </form>
                 {% endif %}
                 <a href="/pages/tables/book/{{ table.id }}">Забронировать</a>
                 {% if current_user.role == 'admin' %}
-                <a href="/pages/tables/delete/{{ table.id }}" class="confirm-link" data-confirm-message="Удалить стол №{{ table.number }}?">Удалить</a>
+                <form method="post" action="/pages/tables/delete/{{ table.id }}" class="confirm-form" data-confirm-message="Удалить стол №{{ table.number }}?">
+                    <button type="submit" class="link-button">Удалить</button>
+                </form>
                 {% endif %}
             </td>
         </tr>

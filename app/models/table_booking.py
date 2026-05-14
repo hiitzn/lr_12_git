@@ -11,7 +11,7 @@ class TableBooking(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     booking_time = Column(DateTime, nullable=False)
     status = Column(String, default="active")
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.utcnow())
 
     table = relationship("RestaurantTable", back_populates="bookings")
     user = relationship("User")

@@ -14,9 +14,10 @@ class Order(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     table_id = Column(Integer, ForeignKey("tables.id"), nullable=False)
     status = Column(String, default="new")
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.utcnow())
     total_amount = Column(Float, default=0.0)
 
+    table = relationship("RestaurantTable", back_populates="orders")
     user = relationship("User", back_populates="orders")
     items = relationship("OrderItem", back_populates="order", cascade="all, delete")
 

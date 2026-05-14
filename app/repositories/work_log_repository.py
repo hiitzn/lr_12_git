@@ -10,7 +10,7 @@ class WorkLogRepository:
     def create(db: Session, user_id: int, hours: float, date: datetime = None):
         if date is None:
             date = datetime.utcnow()
-        log = WorkLog(user_id=user_id, hours=hours, date=date)
+        log = WorkLog(user_id=user_id, hours=hours, created_at=date)
         db.add(log)
         db.commit()
         db.refresh(log)

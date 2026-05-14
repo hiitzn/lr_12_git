@@ -3,14 +3,18 @@
 <h2>Изменить статус заказа #{{ order.id }}</h2>
 <form method="post">
     <select name="status">
-        <option value="new" {% if order.status == 'new' %}selected{% endif %}>Новый</option>
-        <option value="cooking" {% if order.status == 'cooking' %}selected{% endif %}>Готовится</option>
-        <option value="ready" {% if order.status == 'ready' %}selected{% endif %}>Готов</option>
-        <option value="paid" {% if order.status == 'paid' %}selected{% endif %}>Оплачен</option>
+        {% for status in allowed_statuses %}
+        <option value="{{ status }}" {% if order.status == status %}selected{% endif %}>
+            {% if status == 'new' %}Новый
+            {% elif status == 'cooking' %}Готовится
+            {% elif status == 'ready' %}Готов
+            {% elif status == 'paid' %}Оплачен
+            {% endif %}
+        </option>
+        {% endfor %}
     </select>
     <button type="submit">Сохранить</button>
     
-    <!-- Кнопка "Назад" в зависимости от того, откуда пришли -->
     {% if from_history %}
         <a href="/pages/orders/history" class="btn" style="background: #6c757d; text-decoration: none;">Назад к истории</a>
     {% else %}

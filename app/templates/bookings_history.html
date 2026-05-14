@@ -1,0 +1,26 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>История бронирований (истекшие)</h2>
+{% if bookings %}
+<table border="1">
+    <thead>
+        <tr><th>ID</th><th>Стол</th><th>Кто забронировал</th><th>Дата и время</th><th>Статус</th></tr>
+    </thead>
+    <tbody>
+        {% for booking in bookings %}
+        <tr>
+            <td>{{ booking.id }}</a></td>
+            <td>Стол {{ booking.table_number }}</a></td>
+            <td>{{ booking.username }}</a></td>
+            <td>{{ booking.booking_time.strftime('%d.%m.%Y %H:%M') }}</a></td>
+            <td>{{ booking.status }}</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <p><strong>Всего истекших броней:</strong> {{ bookings|length }}</p>
+</table>
+{% else %}
+<p>Нет истекших броней.</p>
+{% endif %}
+<a href="/pages/tables" class="btn" style="background: #6c757d;">Назад к столам</a>
+{% endblock %}

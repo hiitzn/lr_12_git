@@ -8,6 +8,6 @@ class WorkLog(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     hours = Column(Float, nullable=False)  # количество отработанных часов
-    date = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.utcnow())
 
     user = relationship("User", backref="work_logs")

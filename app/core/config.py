@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     DATABASE_URL: str = "sqlite:///./restaurant.db"
+    BOOKING_DURATION_MINUTES: int = 120
 
     # Настройки для автоматического создания администратора
     ADMIN_USERNAME: str = "admin"

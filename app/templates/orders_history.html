@@ -13,7 +13,7 @@
             {% for order in stat.orders %}
             <tr>
                 <td>{{ order.id }}</td>
-                <td>{{ order.table_id }}</td>
+                <td>{{ order.table.number if order.table else '?' }}</td>
                 <td>{{ order.status }}</td>
                 <td>{{ order.total_amount }} руб.</td>
                 <td>{{ order.user.username if order.user else '—' }}</td>
@@ -26,7 +26,11 @@
                     </ul>
                 </td>
                 <td>
+                    {% if current_user.role != 'cook' %}
                     <a href="/pages/orders/status/{{ order.id }}?from_history=true">Изменить статус</a>
+                    {% else %}
+                    —
+                    {% endif %}
                 </td>
             </tr>
             {% endfor %}
