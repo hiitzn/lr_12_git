@@ -42,3 +42,7 @@ class TableService:
     def delete(db: Session, table_id: int) -> None:
         table = TableService._get_or_404(db, table_id)
         TableRepository.delete(db, table)
+
+    @staticmethod
+    def get_by_id(db: Session, table_id: int) -> RestaurantTable | None:
+        return TableRepository.get_by_id(db, table_id)

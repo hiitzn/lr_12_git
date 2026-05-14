@@ -1,0 +1,18 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>Бронирование стола №{{ table.number }}</h2>
+<form method="post">
+    <label>Дата брони:</label>
+    <input type="date" name="booking_date" required min="{{ now_date }}" value="{{ now_date }}">
+    <br><br>
+    <label>Время начала:</label>
+    <input type="time" name="booking_time" required value="19:00">
+    <br><br>
+    <button type="submit">Забронировать</button>
+    <a href="/pages/tables" class="btn" style="background: #6c757d;">Назад</a>
+</form>
+<script>
+    const today = new Date().toISOString().split('T')[0];
+    document.querySelector('input[name="booking_date"]').min = today;
+</script>
+{% endblock %}

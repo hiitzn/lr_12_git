@@ -1,27 +1,43 @@
 ﻿{% extends "base.html" %}
 {% block content %}
 <h2>Столы</h2>
-{% if current_user.role == 'admin' %}
-<a href="/pages/tables/create"><button>Добавить стол</button></a>
-{% endif %}
+<div style="margin-bottom: 16px;">
+    <a href="/pages/bookings"><button>Посмотреть брони на неделю</button></a>
+    {% if current_user.role == 'admin' %}
+    <a href="/pages/tables/create"><button>Добавить стол</button></a>
+    {% endif %}
+</div>
 <table border="1">
-    <tr><th>Номер</th><th>Мест</th><th>Занят?</th><th>Действия</th></tr>
-    {% for table in tables %}
-    <tr>
-        <td>{{ table.number }}</td>
-        <td>{{ table.seats }}</td>
-        <td>{{ 'Да' if table.occupied else 'Нет' }}</td>
-        <td>
-            {% if not table.occupied %}
-            <a href="/pages/tables/occupy/{{ table.id }}">Занять</a>
-            {% else %}
-            <a href="/pages/tables/free/{{ table.id }}">Освободить</a>
-            {% endif %}
-            {% if current_user.role == 'admin' %}
-            <a href="/pages/tables/delete/{{ table.id }}">Удалить</a>
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
+    <thead>
+        <tr><th>Номер</th><th>Мест</th><th>Занят?</th><th>Ближайшая бронь</th><th>Действия</th></tr>
+    </thead>
+    <tbody>
+        {% for table in tables %}
+        <tr>
+            <td>{{ table.number }}</td>
+            <td>{{ table.seats }}</td>
+            <td>{{ 'Да' if table.occupied else 'Нет' }}</td>
+            <td>
+                {% set nearest = table.bookings|selectattr("status","eq","active")|sort(attribute="booking_time")|first if table.bookings else none %}
+                {% if nearest %}
+                {{ nearest.booking_time.strftime('%d.%m %H:%M') }}
+                {% else %}
+                —
+                {% endif %}
+            </td>
+            <td>
+                {% if not table.occupied %}
+                <a href="/pages/tables/occupy/{{ table.id }}">Занять</a>
+                {% else %}
+                <a href="/pages/tables/free/{{ table.id }}">Освободить</a>
+                {% endif %}
+                <a href="/pages/tables/book/{{ table.id }}">Забронировать</a>
+                {% if current_user.role == 'admin' %}
+                <a href="/pages/tables/delete/{{ table.id }}">Удалить</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

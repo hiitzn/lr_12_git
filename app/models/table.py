@@ -1,7 +1,6 @@
 ﻿from sqlalchemy import Boolean, Column, Integer
-
+from sqlalchemy.orm import relationship
 from app.core.database import Base
-
 
 class RestaurantTable(Base):
     __tablename__ = "tables"
@@ -10,3 +9,6 @@ class RestaurantTable(Base):
     number = Column(Integer, unique=True, nullable=False)
     seats = Column(Integer, nullable=False)
     occupied = Column(Boolean, default=False)
+
+    # Добавить связь с бронями
+    bookings = relationship("TableBooking", back_populates="table", cascade="all, delete")

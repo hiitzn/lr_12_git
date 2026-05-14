@@ -1,0 +1,31 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<h2>Бронирования на ближайшую неделю</h2>
+{% if bookings %}
+<table border="1">
+    <thead>
+        <tr><th>ID</th><th>Стол</th><th>Забронировал</th><th>Дата и время</th><th>Действия</th></tr>
+    </thead>
+    <tbody>
+        {% for booking in bookings %}
+        <tr>
+            <td>{{ booking.id }}</td>
+            <td>Стол {{ booking.table_number }}</td>
+            <td>{{ booking.username }}</td>
+            <td>{{ booking.booking_time.strftime('%d.%m.%Y %H:%M') }}</td>
+            <td>
+                {% if booking.user_id == current_user.id or current_user.role == 'admin' %}
+                <form method="post" action="/pages/bookings/{{ booking.id }}/cancel" style="display:inline;">
+                    <button type="submit" onclick="return confirm('Отменить бронь?')">Отменить</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Нет активных броней на ближайшую неделю.</p>
+{% endif %}
+<a href="/pages/tables" class="btn" style="background: #6c757d;">Назад к столам</a>
+{% endblock %}

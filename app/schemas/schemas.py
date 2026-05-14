@@ -1,7 +1,7 @@
 ﻿from typing import List
 
 from pydantic import BaseModel
-
+from datetime import datetime
 
 # --- Auth ---
 
@@ -94,3 +94,22 @@ class AnalyticsResponse(BaseModel):
     status_stats: list
     top_dishes: list
     table_load: str
+
+
+class TableBookingCreate(BaseModel):
+    table_id: int
+    booking_time: datetime
+    duration_minutes: int = 120
+
+class TableBookingResponse(BaseModel):
+    id: int
+    table_id: int
+    user_id: int
+    booking_time: datetime
+    duration_minutes: int
+    status: str
+    created_at: datetime
+    table_number: int | None = None
+    username: str | None = None
+
+    model_config = {"from_attributes": True}

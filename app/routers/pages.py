@@ -16,6 +16,12 @@ from app.services.auth_service import AuthService
 from app.schemas.schemas import OrderItemCreate
 from sqlalchemy.orm import joinedload
 from app.models.order_item import OrderItem
+from app.services.table_booking_service import TableBookingService
+from app.models.table_booking import TableBooking
+from datetime import datetime
+from datetime import date
+from app.repositories.table_booking_repository import TableBookingRepository
+from app.repositories.table_repository import TableRepository
 
 router = APIRouter(prefix="/pages", tags=["Pages"])
 templates = Jinja2Templates(directory="app/templates")
@@ -160,6 +166,8 @@ async def table_delete(table_id: int, db: Session = Depends(get_db), user: User 
 
 @router.get("/tables/occupy/{table_id}")
 async def table_occupy(table_id: int, db: Session = Depends(get_db), user: User = Depends(waiter_required)):
+    if TableBookingRepository.is_table_booked(db, table_id, datetime.utcnow()):
+        raise HTTPException(400, "Стол забронирован на текущее время")
     TableService.occupy(db, table_id)
     return RedirectResponse(url="/pages/tables", status_code=302)
 
@@ -265,3 +273,49 @@ async def admin_panel(request: Request, db: Session = Depends(get_db), user: Use
 async def admin_change_role(user_id: int, role: str = Form(...), db: Session = Depends(get_db), user: User = Depends(admin_required)):
     UserService.change_role(db, user_id, role)
     return RedirectResponse(url="/pages/admin", status_code=302)
+
+# ------------------- БРОНИРОВАНИЕ СТОЛОВ -------------------
+
+@router.get("/tables/book/{table_id}")
+async def book_table_form(request: Request, table_id: int, db: Session = Depends(get_db), user: User = Depends(waiter_required)):
+    table = TableRepository.get_by_id(db, table_id)   # изменено
+    if not table:
+        raise HTTPException(404, "Стол не найден")
+    return templates.TemplateResponse("book_table.html", {
+        "request": request,
+        "table": table,
+        "current_user": user,
+        "now_date": date.today().isoformat()
+    })
+
+@router.post("/tables/book/{table_id}")
+async def book_table(
+    request: Request,
+    table_id: int,
+    booking_date: str = Form(...),
+    booking_time: str = Form(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(waiter_required)
+):
+    try:
+        booking_datetime = datetime.strptime(f"{booking_date} {booking_time}", "%Y-%m-%d %H:%M")
+    except ValueError:
+        raise HTTPException(400, "Неверный формат даты/времени")
+    # Убрали параметр duration_minutes
+    TableBookingService.create_booking(db, user.id, table_id, booking_datetime)
+    return RedirectResponse(url="/pages/tables", status_code=302)
+
+@router.get("/bookings")
+async def view_bookings(request: Request, db: Session = Depends(get_db), user: User = Depends(waiter_required)):
+    bookings = TableBookingService.get_week_bookings(db)
+    return templates.TemplateResponse("bookings.html", {"request": request, "bookings": bookings, "current_user": user})
+
+@router.post("/bookings/{booking_id}/cancel")
+async def cancel_booking(
+    booking_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(waiter_required)
+):
+    is_admin = user.role == "admin"
+    TableBookingService.cancel_booking(db, booking_id, user.id, is_admin)
+    return RedirectResponse(url="/pages/bookings", status_code=302)
