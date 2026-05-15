@@ -9,6 +9,7 @@ from app.repositories.user_repository import UserRepository
 from app.templating import templates
 from app.utils.decorators import handle_errors
 from app.models.user import User
+from app.core.config import settings
 
 router = APIRouter(prefix="/pages", tags=["Auth"])
 
@@ -43,7 +44,14 @@ async def login(
             url="/pages/kitchen" if user and user.role == "cook" else "/pages/menu",
             status_code=302
         )
-        response.set_cookie(key="access_token", value=token, httponly=True, samesite="strict", secure=True)
+        # secure флаг берем из настроек (по умолчанию False для разработки, True для продакшна)
+        response.set_cookie(
+            key="access_token",
+            value=token,
+            httponly=True,
+            samesite="strict",
+            secure=settings.COOKIE_SECURE   # добавить в config.py
+        )
         return response
     except HTTPException:
         return templates.TemplateResponse("login.html", {

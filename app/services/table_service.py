@@ -44,6 +44,8 @@ class TableService:
     @staticmethod
     def occupy(db: Session, table_id: int) -> RestaurantTable:
         table = TableService._get_or_404(db, table_id)
+        if table.occupied:
+            raise HTTPException(status_code=400, detail="Стол уже занят")
         return TableRepository.set_occupied(db, table, True)
 
     @staticmethod

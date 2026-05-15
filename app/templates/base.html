@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -174,17 +174,17 @@
             pendingCallback = callback;
         }
 
-        confirmBtn.onclick = function() {
+        confirmBtn.onclick = function () {
             modal.style.display = 'none';
             if (pendingCallback) pendingCallback(true);
             pendingCallback = null;
         };
-        cancelBtn.onclick = function() {
+        cancelBtn.onclick = function () {
             modal.style.display = 'none';
             if (pendingCallback) pendingCallback(false);
             pendingCallback = null;
         };
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             if (event.target == modal) {
                 modal.style.display = 'none';
                 if (pendingCallback) pendingCallback(false);
@@ -192,7 +192,7 @@
             }
         };
 
-        document.addEventListener('submit', function(e) {
+        document.addEventListener('submit', function (e) {
             const form = e.target;
             if (form.classList.contains('confirm-form')) {
                 e.preventDefault();
@@ -203,7 +203,7 @@
             }
         });
 
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const link = e.target.closest('.confirm-link');
             if (link && link.href) {
                 e.preventDefault();
@@ -214,8 +214,15 @@
             }
         });
 
-        {% if error %} showMessage({{ error|tojson }}, "error"); {% endif %}
-        {% if success %} showMessage({{ success|tojson }}, "success"); {% endif %}
+        // Вместо tojson используем скрытые элементы
+        const errorEl = document.getElementById('flash-error');
+        if (errorEl) showMessage(errorEl.textContent, 'error');
+        const successEl = document.getElementById('flash-success');
+        if (successEl) showMessage(successEl.textContent, 'success');
     </script>
+
+    <!-- Скрытые элементы для flash-сообщений -->
+    {% if error %}<div id="flash-error" style="display:none">{{ error }}</div>{% endif %}
+    {% if success %}<div id="flash-success" style="display:none">{{ success }}</div>{% endif %}
 </body>
 </html>

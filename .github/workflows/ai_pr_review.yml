@@ -56,7 +56,6 @@ jobs:
           curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3.diff" \
             "${{ github.event.pull_request.diff_url }}" > pr.diff
-          # Обрезаем по строкам, чтобы не сломать UTF-8
           head -n 200 pr.diff > pr_diff_small.txt
 
       - name: Generate AI description + review
@@ -68,7 +67,6 @@ jobs:
 
           PROMPT="Ты — senior разработчик. Проанализируй изменения в коде и результаты линтеров. Опиши основные изменения, укажи на потенциальные ошибки, нарушения стиля, проблемы безопасности. Ответ на русском языке в формате Markdown. Будь конкретен.\n\n--- DIFF (изменения) ---\n$DIFF\n\n--- Flake8 (стиль/синтаксис) ---\n$FLAKE\n\n--- Bandit (безопасность) ---\n$BANDIT"
 
-          # Безопасное создание JSON через jq
           jq -n --arg model "tinyllama" --arg prompt "$PROMPT" '{model: $model, prompt: $prompt, stream: false}' > payload.json
           RESPONSE=$(curl -s -X POST http://localhost:11434/api/generate -d @payload.json)
 
@@ -78,13 +76,9 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Post comment to PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const comment = `## 🤖 AI Code Review (Ollama/tinyllama)\n\n${{ steps.ai.outputs.comment }}`;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+        run: |
+          echo "## 🤖 AI Code Review (Ollama/tinyllama)" > comment.md
+          echo "${{ steps.ai.outputs.comment }}" >> comment.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file comment.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

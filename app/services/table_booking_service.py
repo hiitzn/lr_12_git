@@ -1,4 +1,4 @@
-﻿from datetime import datetime, timedelta
+﻿from datetime import datetime, timedelta, timezone
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.repositories.table_booking_repository import TableBookingRepository
@@ -26,20 +26,11 @@ class TableBookingService:
 
     @staticmethod
     def get_week_bookings(db: Session, start_date: datetime = None):
-        # 1. Помечаем истекшие активные брони как "expired"
-        now = datetime.utcnow()
-        db.query(TableBooking).filter(
-            TableBooking.booking_time < now,
-            TableBooking.status == "active"
-        ).update({"status": "expired"}, synchronize_session=False)
-        db.commit()
-    
-        # 2. Берём текущий момент для начала выборки
+        now = datetime.now(timezone.utc)
         if start_date is None:
             start_date = now
         end_date = start_date + timedelta(days=7)
     
-        # 3. Выбираем только активные брони в будущем
         bookings = db.query(TableBooking).filter(
             TableBooking.status == "active",
             TableBooking.booking_time >= start_date,

@@ -110,6 +110,7 @@ async def order_status_form(
         "error": error
     })
 
+@handle_errors(redirect_url="/pages/orders")
 @router.post("/orders/status/{order_id}")
 async def order_status_update(
     request: Request,

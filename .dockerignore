@@ -1,8 +1,6 @@
 __pycache__
 *.pyc
 
-.env
-
 .idea
 .vscode
 
@@ -18,4 +16,3 @@ venv/
 .dockerignore 
 Dockerfile
 *.md
-tests/      

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.models.table_booking import TableBooking
 from app.core.config import settings
 
+
 class TableBookingRepository:
     @staticmethod
     def get_by_id(db: Session, booking_id: int) -> TableBooking | None:
@@ -21,15 +22,20 @@ class TableBookingRepository:
 
     @staticmethod
     def is_table_booked(db: Session, table_id: int, check_time: datetime) -> bool:
-        duration = settings.BOOKING_DURATION_MINUTES
-        start = check_time
-        end = check_time + timedelta(minutes=duration)
-        overlapping = db.query(TableBooking).filter(
+        duration = timedelta(minutes=settings.BOOKING_DURATION_MINUTES)
+        check_end = check_time + duration
+
+        # Ищем любую активную бронь, которая пересекается с [check_time, check_end]
+        # SQLite не умеет сложение datetime + timedelta, поэтому используем Python
+        all_bookings = db.query(TableBooking).filter(
             TableBooking.table_id == table_id,
-            TableBooking.status == "active",
-            TableBooking.booking_time < end and TableBooking.booking_time >= start
-        ).first()
-        return overlapping is not None
+            TableBooking.status == "active"
+        ).all()
+        for booking in all_bookings:
+            booking_end = booking.booking_time + duration
+            if booking.booking_time < check_end and booking_end > check_time:
+                return True
+        return False
 
     @staticmethod
     def create(db: Session, table_id: int, user_id: int, booking_time: datetime) -> TableBooking:
