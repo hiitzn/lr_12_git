@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     # Настройки для автоматического создания администратора
     ADMIN_USERNAME: str = "admin"
     ADMIN_PASSWORD: str
+    COOKIE_SECURE: bool = False
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

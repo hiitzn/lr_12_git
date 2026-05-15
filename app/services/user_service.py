@@ -5,6 +5,7 @@ from app.models.user import User
 from app.repositories.user_repository import UserRepository
 from sqlalchemy import func
 from app.models.work_log import WorkLog
+from app.models.table_booking import TableBooking
 from app.services.order_service import OrderService
 
 logger = logging.getLogger(__name__)
@@ -42,15 +43,17 @@ class UserService:
         if not user:
             raise HTTPException(404, "User not found")
     
-        # Вручную удаляем заказы пользователя через OrderService (чтобы освободить столы)
-        for order in user.orders:
-            OrderService.delete(db, order.id)  # этот метод освобождает стол
+        # Удаляем связанные записи
+        db.query(WorkLog).filter(WorkLog.user_id == user_id).delete()
+        db.query(TableBooking).filter(TableBooking.user_id == user_id).delete()
     
-        # Альтернатива: удалить все заказы одним запросом, но тогда нужно освободить столы
-        # Проще пройтись по каждому заказу.
+        # Собираем ID заказов и удаляем их (освобождая столы)
+        order_ids = [order.id for order in user.orders]
+        for oid in order_ids:
+            OrderService.delete(db, oid)
     
         UserRepository.delete(db, user)
-        logger.info("User %d deleted with all orders", user_id)
+        db.commit()
 
     @staticmethod
     def get_users_with_salary_stats(db: Session) -> list[dict]:
