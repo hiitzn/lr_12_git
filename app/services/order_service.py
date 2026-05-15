@@ -25,31 +25,35 @@ class OrderService:
 
     @staticmethod
     def create(db: Session, user_id: int, table_id: int, items: list[OrderItemCreate], notes: str | None = None) -> Order:
-        # Проверка существования стола
+        # 1. Проверка: заказ не может быть пустым
+        if not items:
+            raise HTTPException(400, "Заказ должен содержать хотя бы одно блюдо")
+
+        # 2. Проверка существования стола
         table = db.query(RestaurantTable).filter(RestaurantTable.id == table_id).first()
         if not table:
             raise HTTPException(404, "Table not found")
 
-        # Проверка брони на текущее время
-        now = datetime.now()
+        # 3. Проверка брони на текущее время (используем UTC)
+        now = datetime.utcnow()
         if TableBookingRepository.is_table_booked(db, table_id, now):
             raise HTTPException(400, "Стол уже забронирован на это время")
 
-        # Атомарно занимаем стол
+        # 4. Атомарно занимаем стол (только если свободен)
         result = db.execute(
             update(RestaurantTable)
             .where(RestaurantTable.id == table_id, RestaurantTable.occupied == False)
             .values(occupied=True)
         )
         if result.rowcount == 0:
-            # Стол мог стать занятым между проверкой брони и этим моментом – очень редко, но возможно
             raise HTTPException(400, "Стол уже занят")
-    
-        # 2. Создаём заказ
+
+        # 5. Создаём заказ
         order = Order(user_id=user_id, table_id=table_id, status="new", notes=notes)
         db.add(order)
-        db.flush()   # чтобы получить order.id
-    
+        db.flush()   # получаем order.id
+
+        # 6. Добавляем позиции и считаем сумму
         total = 0.0
         for item in items:
             menu_item = db.query(MenuItem).filter(MenuItem.id == item.menu_item_id).first()
@@ -57,9 +61,9 @@ class OrderService:
                 raise HTTPException(404, f"Menu item {item.menu_item_id} not found")
             total += menu_item.price * item.quantity
             db.add(OrderItem(order_id=order.id, menu_item_id=menu_item.id, quantity=item.quantity))
-    
+
         order.total_amount = total
-        db.commit()   # ЕДИНСТВЕННЫЙ КОММИТ – ВСЕ ИЗМЕНЕНИЯ РАЗОМ
+        db.commit()
         db.refresh(order)
         return order
 
@@ -97,7 +101,6 @@ class OrderService:
             table.occupied = False
 
         db.delete(order)   # удаляем заказ
-        db.commit()
         return {"message": "Order deleted"}
 
     @staticmethod

@@ -23,4 +23,3 @@ class OrderRepository:
     @staticmethod
     def delete(db: Session, order: Order) -> None:
         db.delete(order)
-        db.commit()

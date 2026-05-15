@@ -1,6 +1,5 @@
 ﻿import sys
 from pathlib import Path
-# Добавляем корень проекта в sys.path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import os
@@ -33,6 +32,7 @@ os.environ["ADMIN_PASSWORD"] = "admin123"
 settings.SECRET_KEY = "test-secret-key"
 settings.ADMIN_PASSWORD = "admin123"
 settings.COOKIE_SECURE = False
+settings.BOOKING_DURATION_MINUTES = 120
 
 # ---------- In-memory БД ----------
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"

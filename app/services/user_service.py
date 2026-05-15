@@ -42,16 +42,20 @@ class UserService:
         user = UserRepository.get_by_id(db, user_id)
         if not user:
             raise HTTPException(404, "User not found")
-    
-        # Удаляем связанные записи
-        db.query(WorkLog).filter(WorkLog.user_id == user_id).delete()
-        db.query(TableBooking).filter(TableBooking.user_id == user_id).delete()
-    
-        # Собираем ID заказов и удаляем их (освобождая столы)
+
+        # Удаляем заказы (освобождаем столы)
         order_ids = [order.id for order in user.orders]
         for oid in order_ids:
             OrderService.delete(db, oid)
-    
+
+        # Удаляем связанные записи без синхронизации сессии
+        db.query(WorkLog).filter(WorkLog.user_id == user_id).delete(synchronize_session=False)
+        db.query(TableBooking).filter(TableBooking.user_id == user_id).delete(synchronize_session=False)
+
+        # Очищаем identity map, чтобы избежать ObjectDeletedError
+        db.expire_all()
+
+        # Удаляем пользователя
         UserRepository.delete(db, user)
         db.commit()
 

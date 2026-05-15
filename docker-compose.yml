@@ -10,6 +10,7 @@ services:
       - .env
     environment:
       - DATABASE_URL=sqlite:///./data/restaurant.db
+      - PYTHONPATH=/app
     volumes:
       - ./data:/app/data
     restart: always

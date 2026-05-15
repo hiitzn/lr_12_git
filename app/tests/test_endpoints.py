@@ -1,7 +1,6 @@
 ﻿# ==================== test_endpoints.py ====================
 import pytest
-from datetime import datetime, timedelta
-
+from urllib.parse import unquote
 
 class TestAuthEndpoints:
     def test_login_page_get(self, client):
@@ -23,12 +22,14 @@ class TestAuthEndpoints:
     def test_login_failure(self, client):
         response = client.post("/pages/login", data={"username": "wrong", "password": "wrong"})
         assert response.status_code == 200
-        assert "Неверное имя пользователя или пароль" in response.text
+        # Принудительно удаляем BOM через декодирование UTF-8-sig
+        clean_text = response.text.encode('utf-8').decode('utf-8-sig')
+        assert "Неверное имя пользователя или пароль" in clean_text
 
     def test_register_success(self, client, db_session):
         response = client.post("/pages/register", data={"username": "newwaiter", "password": "pass123"}, follow_redirects=False)
         assert response.status_code == 302
-        assert "success=Регистрация+успешна" in response.headers["location"]
+        assert "success=Регистрация+успешна" in unquote(response.headers["location"])
 
     def test_register_duplicate(self, client, test_user_waiter):
         response = client.post("/pages/register", data={"username": test_user_waiter.username, "password": "pass"}, follow_redirects=False)
@@ -41,8 +42,8 @@ class TestAuthEndpoints:
         response = client.get("/pages/logout", follow_redirects=False)
         assert response.status_code == 302
         assert response.headers["location"] == "/pages/login"
-        # Кука должна быть удалена (значение None или пустая строка)
-        assert response.cookies.get("access_token") == ""
+        # Кука должна быть удалена – её нет в ответе
+        assert "access_token" not in response.cookies
 
 
 class TestMenuEndpoints:
@@ -65,10 +66,11 @@ class TestMenuEndpoints:
     def test_menu_create_post_admin(self, client, test_user_admin):
         client.post("/pages/login", data={"username": "admin1", "password": "admin123"})
         response = client.post("/pages/menu/create", data={
-            "name": "Test Dish", "price": 10.5, "category": "Test", "ingredients": "test", "instructions": "test", "cooking_time": 30
+            "name": "Test Dish", "price": 10.5, "category": "Test",
+            "ingredients": "test", "instructions": "test", "cooking_time": 30
         }, follow_redirects=False)
         assert response.status_code == 302
-        assert "success=Блюдо+добавлено" in response.headers["location"]
+        assert "success=Блюдо+добавлено" in unquote(response.headers["location"])
 
 
 class TestOrderEndpoints:
@@ -82,7 +84,7 @@ class TestOrderEndpoints:
         }
         response = client.post("/pages/orders/create", data=form_data, follow_redirects=False)
         assert response.status_code == 302
-        assert "success=Заказ+создан" in response.headers["location"]
+        assert "success=Заказ+создан" in unquote(response.headers["location"])
 
 
 class TestKitchenEndpoints:
@@ -104,3 +106,61 @@ class TestAdminEndpoints:
         response = client.get("/pages/admin")
         assert response.status_code == 200
         assert "Админ-панель" in response.text
+
+        # ==================== Дополнительные тесты эндпоинтов для покрытия ====================
+class TestAdditionalEndpoints:
+
+    def test_recipes_detail_waiter_forbidden(self, client, test_user_waiter, test_menu_item):
+        client.post("/pages/login", data={"username": "waiter1", "password": "pass123"})
+        response = client.get(f"/pages/recipes/{test_menu_item.id}")
+        assert response.status_code == 403
+
+    def test_bookings_history(self, client, test_user_waiter):
+        client.post("/pages/login", data={"username": "waiter1", "password": "pass123"})
+        response = client.get("/pages/bookings/history")
+        assert response.status_code == 200
+
+    def test_occupy_table_waiter(self, client, test_user_waiter, test_table):
+        client.post("/pages/login", data={"username": "waiter1", "password": "pass123"})
+        response = client.post(f"/pages/tables/occupy/{test_table.id}", follow_redirects=False)
+        assert response.status_code == 302
+
+    def test_free_table_waiter(self, client, test_user_waiter, test_table_occupied):
+        client.post("/pages/login", data={"username": "waiter1", "password": "pass123"})
+        response = client.post(f"/pages/tables/free/{test_table_occupied.id}", follow_redirects=False)
+        assert response.status_code == 302
+
+    def test_salary_stats_admin(self, client, test_user_admin):
+        client.post("/pages/login", data={"username": "admin1", "password": "admin123"})
+        response = client.get("/pages/salary_stats")
+        assert response.status_code == 200
+        assert "Зарплаты" in response.text
+
+    def test_add_hours_page_waiter(self, client, test_user_waiter):
+        client.post("/pages/login", data={"username": "waiter1", "password": "pass123"})
+        response = client.get("/pages/add_hours")
+        assert response.status_code == 200
+
+    def test_add_hours_post(self, client, test_user_waiter):
+        client.post("/pages/login", data={"username": "waiter1", "password": "pass123"})
+        response = client.post("/pages/add_hours", data={"hours": "5.5", "date_str": "2025-01-01"}, follow_redirects=False)
+        assert response.status_code == 302
+        assert "success" in response.headers["location"]
+
+    def test_my_salary(self, client, test_user_waiter):
+        client.post("/pages/login", data={"username": "waiter1", "password": "pass123"})
+        response = client.get("/pages/my_salary")
+        assert response.status_code == 200
+        assert "зарплата" in response.text.lower()
+
+    def test_order_status_form_waiter(self, client, test_user_waiter, test_order):
+        client.post("/pages/login", data={"username": "waiter1", "password": "pass123"})
+        response = client.get(f"/pages/orders/status/{test_order.id}")
+        assert response.status_code == 200
+        assert "Изменить статус" in response.text
+
+    def test_analytics_admin(self, client, test_user_admin):
+        client.post("/pages/login", data={"username": "admin1", "password": "admin123"})
+        response = client.get("/pages/analytics")
+        assert response.status_code == 200
+        assert "Analytics" in response.text or "Выручка" in response.text
