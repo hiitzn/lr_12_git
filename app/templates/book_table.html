@@ -40,13 +40,21 @@
     dateInput.addEventListener('change', updateMinTime);
     updateMinTime();
 
-    // Дополнительная проверка при отправке формы
-    document.getElementById('bookingForm').addEventListener('submit', function(e) {
-        const bookingDateTime = new Date(dateInput.value + 'T' + timeInput.value);
-        if (bookingDateTime < new Date()) {
-            e.preventDefault();
-            showMessage("Нельзя забронировать на прошедшее время", 'error');
-        }
-    });
+  document.getElementById('bookingForm').addEventListener('submit', function(e) {
+    const dateInput = document.querySelector('input[name="booking_date"]');
+    const timeInput = document.getElementById('booking_time');
+    
+    // Создаём локальную дату и время
+    const localDateTime = new Date(dateInput.value + 'T' + timeInput.value);
+    // Переводим в UTC
+    const utcDateTime = new Date(localDateTime.getTime() + localDateTime.getTimezoneOffset() * 60000);
+    // Формируем строки для отправки (ISO без смещения)
+    const utcDate = utcDateTime.toISOString().split('T')[0];
+    const utcTime = utcDateTime.toISOString().split('T')[1].substring(0, 5);
+    
+    // Подменяем значения полей перед отправкой
+    document.querySelector('input[name="booking_date"]').value = utcDate;
+    document.querySelector('input[name="booking_time"]').value = utcTime;
+});
 </script>
 {% endblock %}

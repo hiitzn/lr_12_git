@@ -3,6 +3,9 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
+from sqlalchemy import func
+from app.models.work_log import WorkLog
+from app.services.order_service import OrderService
 
 logger = logging.getLogger(__name__)
 VALID_ROLES = {"waiter", "cook", "admin"}
@@ -13,6 +16,14 @@ class UserService:
     @staticmethod
     def get_all(db: Session) -> list[User]:
         return UserRepository.get_all(db)
+
+    @staticmethod
+    def update_hourly_rate(db: Session, user_id: int, new_rate: int):
+        user = UserRepository.get_by_id(db, user_id)
+        if not user:
+            raise HTTPException(404, "Пользователь не найден")
+        user.hourly_rate = new_rate
+        db.commit()
 
     @staticmethod
     def change_role(db: Session, user_id: int, role: str) -> User:
@@ -30,24 +41,34 @@ class UserService:
         user = UserRepository.get_by_id(db, user_id)
         if not user:
             raise HTTPException(404, "User not found")
+    
+        # Вручную удаляем заказы пользователя через OrderService (чтобы освободить столы)
+        for order in user.orders:
+            OrderService.delete(db, order.id)  # этот метод освобождает стол
+    
+        # Альтернатива: удалить все заказы одним запросом, но тогда нужно освободить столы
+        # Проще пройтись по каждому заказу.
+    
         UserRepository.delete(db, user)
-        logger.info("User %d deleted", user_id)
+        logger.info("User %d deleted with all orders", user_id)
 
     @staticmethod
     def get_users_with_salary_stats(db: Session) -> list[dict]:
-        """Возвращает список сотрудников (waiter, cook) с расчётом зарплаты."""
-        from app.services.work_log_service import WorkLogService
-        users = UserRepository.get_all(db)
+        result = db.query(
+            User.username,
+            User.role,
+            User.hourly_rate,
+            func.coalesce(func.sum(WorkLog.hours), 0).label('total_hours')
+        ).outerjoin(WorkLog, User.id == WorkLog.user_id).group_by(User.id).all()
+
         stats = []
-        for u in users:
-            if u.role in ('waiter', 'cook'):
-                total_hours = WorkLogService.get_user_hours(db, u.id)
-                salary = total_hours * u.hourly_rate
-                stats.append({
-                    "username": u.username,
-                    "role": u.role,
-                    "hourly_rate": u.hourly_rate,
-                    "total_hours": total_hours,
-                    "salary": salary
-                })
+        for username, role, hourly_rate, total_hours in result:
+            salary = total_hours * hourly_rate
+            stats.append({
+                "username": username,
+                "role": role,
+                "hourly_rate": hourly_rate,
+                "total_hours": total_hours,
+                "salary": salary
+            })
         return stats

@@ -4,12 +4,17 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.models.menu import MenuItem
+from sqlalchemy import update
+from app.models.table import RestaurantTable
 from app.models.order import Order
 from app.models.order_item import OrderItem
 from app.repositories.order_repository import OrderRepository
 from app.repositories.table_repository import TableRepository
 from app.services.table_service import TableService
 from app.schemas.schemas import OrderItemCreate
+from datetime import datetime, timezone
+from app.repositories.table_booking_repository import TableBookingRepository
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -20,68 +25,79 @@ class OrderService:
 
     @staticmethod
     def create(db: Session, user_id: int, table_id: int, items: list[OrderItemCreate], notes: str | None = None) -> Order:
-        # Проверка существования стола и его занятости
-        table = TableService.get_by_id(db, table_id)
+        # Проверка существования стола
+        table = db.query(RestaurantTable).filter(RestaurantTable.id == table_id).first()
         if not table:
-            raise HTTPException(status_code=404, detail="Table not found")
-        if table.occupied:
-            raise HTTPException(status_code=400, detail="Стол уже занят. Освободите или выберите другой.")
+            raise HTTPException(404, "Table not found")
 
+        # Проверка брони на текущее время
+        now = datetime.now()
+        if TableBookingRepository.is_table_booked(db, table_id, now):
+            raise HTTPException(400, "Стол уже забронирован на это время")
+
+        # Атомарно занимаем стол
+        result = db.execute(
+            update(RestaurantTable)
+            .where(RestaurantTable.id == table_id, RestaurantTable.occupied == False)
+            .values(occupied=True)
+        )
+        if result.rowcount == 0:
+            # Стол мог стать занятым между проверкой брони и этим моментом – очень редко, но возможно
+            raise HTTPException(400, "Стол уже занят")
+    
+        # 2. Создаём заказ
         order = Order(user_id=user_id, table_id=table_id, status="new", notes=notes)
         db.add(order)
-        db.flush()
-
+        db.flush()   # чтобы получить order.id
+    
         total = 0.0
         for item in items:
             menu_item = db.query(MenuItem).filter(MenuItem.id == item.menu_item_id).first()
             if not menu_item:
-                db.rollback()
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"Menu item {item.menu_item_id} not found",
-                )
+                raise HTTPException(404, f"Menu item {item.menu_item_id} not found")
             total += menu_item.price * item.quantity
             db.add(OrderItem(order_id=order.id, menu_item_id=menu_item.id, quantity=item.quantity))
-
+    
         order.total_amount = total
-        # Автоматически занимаем стол
-        TableRepository.set_occupied(db, table, True)
-        db.commit()
+        db.commit()   # ЕДИНСТВЕННЫЙ КОММИТ – ВСЕ ИЗМЕНЕНИЯ РАЗОМ
         db.refresh(order)
-        logger.info("Order %d created for user %d, table %d occupied", order.id, user_id, table_id)
         return order
 
     @staticmethod
     def change_status(db: Session, order_id: int, status: str) -> Order:
         if status not in VALID_STATUSES:
-            raise HTTPException(status_code=400, detail=f"Invalid status. Valid: {VALID_STATUSES}")
+            raise HTTPException(400, f"Invalid status. Valid: {VALID_STATUSES}")
         order = OrderRepository.get_by_id(db, order_id)
         if not order:
-            raise HTTPException(status_code=404, detail="Order not found")
+            raise HTTPException(404, "Order not found")
 
-        # Если статус меняется на "paid" – освобождаем стол
+        # Запрещаем переход из paid в любой другой статус
+        if order.status == "paid" and status != "paid":
+            raise HTTPException(400, "Нельзя изменить статус оплаченного заказа")
+
+        # Если статус меняется на "paid" – освобождаем стол (и только тогда)
         if status == "paid" and order.status != "paid":
             table = TableService.get_by_id(db, order.table_id)
             if table and table.occupied:
-                TableRepository.set_occupied(db, table, False)
-                logger.info("Table %d freed after order %d paid", order.table_id, order_id)
+                table.occupied = False   # освобождаем стол без отдельного коммита
 
-        return OrderRepository.update_status(db, order, status)
+        order.status = status
+        db.commit()
+        db.refresh(order)
+        return order
 
     @staticmethod
     def delete(db: Session, order_id: int) -> dict:
         order = OrderRepository.get_by_id(db, order_id)
         if not order:
-            raise HTTPException(status_code=404, detail="Order not found")
+            raise HTTPException(404, "Order not found")
 
-        # Освобождаем стол, если он был занят
         table = TableService.get_by_id(db, order.table_id)
         if table and table.occupied:
-            TableRepository.set_occupied(db, table, False)
-            logger.info("Table %d freed after order %d deleted", order.table_id, order_id)
+            table.occupied = False
 
-        OrderRepository.delete(db, order)
-        logger.info("Order %d deleted", order_id)
+        db.delete(order)   # удаляем заказ
+        db.commit()
         return {"message": "Order deleted"}
 
     @staticmethod

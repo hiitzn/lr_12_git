@@ -30,15 +30,7 @@ class MenuService:
     def update(db: Session, item_id: int, name: str, price: float, category: str,
                ingredients: str = "", instructions: str = "", cooking_time: int = 30) -> MenuItem:
         item = MenuService._get_or_404(db, item_id)
-        item.name = name
-        item.price = price
-        item.category = category
-        item.ingredients = ingredients
-        item.instructions = instructions
-        item.cooking_time = cooking_time
-        db.commit()
-        db.refresh(item)
-        return item
+        return MenuRepository.update(db, item, name, price, category, ingredients, instructions, cooking_time)
 
     @staticmethod
     def delete(db: Session, item_id: int) -> dict:

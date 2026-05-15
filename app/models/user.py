@@ -12,4 +12,4 @@ class User(Base):
     role = Column(String, default="waiter")
     hourly_rate = Column(Integer, default=200)
 
-    orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
+    orders = relationship("Order", back_populates="user")  

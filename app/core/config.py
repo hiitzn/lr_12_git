@@ -10,7 +10,7 @@ class Settings(BaseSettings):
 
     # Настройки для автоматического создания администратора
     ADMIN_USERNAME: str = "admin"
-    ADMIN_PASSWORD: str = "admin"
+    ADMIN_PASSWORD: str
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

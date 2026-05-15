@@ -9,24 +9,32 @@ from app.core.database import Base, engine, SessionLocal
 from app.core.config import settings                        
 from app.core.security import hash_password               
 from app.models.user import User                            
-from app.routers import admin, analytics, auth, kitchen, menu, orders, tables, users
 from app.routers import pages
 from app.templating import templates 
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
 
 app = FastAPI(title="Restaurant Management System")
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+limiter = Limiter(key_func=get_remote_address, default_limits=["5/minute"])
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+from app.routers.pages import (
+    auth_router, menu_router, tables_router, orders_router,
+    kitchen_router, salary_router, admin_router
+)
 
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(tables.router)
-app.include_router(menu.router)
-app.include_router(orders.router)
-app.include_router(kitchen.router)
-app.include_router(admin.router)
-app.include_router(analytics.router)
-app.include_router(pages.router)
+app.include_router(auth_router)
+app.include_router(menu_router)
+app.include_router(tables_router)
+app.include_router(orders_router)
+app.include_router(kitchen_router)
+app.include_router(salary_router)
+app.include_router(admin_router)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -55,4 +63,6 @@ def create_admin_if_not_exists():
 async def root():
     return RedirectResponse(url="/pages")
 
-create_admin_if_not_exists()
+@app.on_event("startup")
+def startup_event():
+    create_admin_if_not_exists()

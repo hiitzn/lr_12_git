@@ -3,7 +3,7 @@ from datetime import datetime
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session, joinedload
-
+from app.models.order import Order
 from app.models.table import RestaurantTable
 from app.repositories.table_repository import TableRepository
 
@@ -53,6 +53,14 @@ class TableService:
 
     @staticmethod
     def delete(db: Session, table_id: int) -> None:
+        # Проверяем, есть ли активные заказы за этим столом
+        active_order = db.query(Order).filter(
+            Order.table_id == table_id,
+            Order.status != "paid"
+        ).first()
+        if active_order:
+            raise HTTPException(status_code=400, detail="Нельзя удалить стол с активными заказами")
+    
         table = TableService._get_or_404(db, table_id)
         TableRepository.delete(db, table)
 

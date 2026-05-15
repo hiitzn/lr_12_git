@@ -22,12 +22,12 @@ class TableBookingRepository:
     @staticmethod
     def is_table_booked(db: Session, table_id: int, check_time: datetime) -> bool:
         duration = settings.BOOKING_DURATION_MINUTES
-        end_time = check_time + timedelta(minutes=duration)
+        start = check_time
+        end = check_time + timedelta(minutes=duration)
         overlapping = db.query(TableBooking).filter(
             TableBooking.table_id == table_id,
             TableBooking.status == "active",
-            TableBooking.booking_time < end_time,
-            TableBooking.booking_time + timedelta(minutes=duration) > check_time
+            TableBooking.booking_time < end and TableBooking.booking_time >= start
         ).first()
         return overlapping is not None
 
