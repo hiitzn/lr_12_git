@@ -134,3 +134,6 @@ docker-compose run --rm restaurant_app pytest app/tests/ -v --cov=app --cov-repo
 ![http://localhost:8000/pages/admin](screens/admin.jpg)
 ![http://localhost:8000/pages/kitchen](screens/kitchen.jpg)
 ![http://localhost:8000/pages/orders/create](screens/create.jpg)
+
+Скриншот комментария в PR:
+![ответ](screens/com.jpg)
